@@ -4,43 +4,40 @@
 import MeetingRoom from '@/components/MeetingRoom';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
-import { useUser, useDoc, useFirebase, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 
 
 function MeetingPageContent({ params }: { params: { roomName: string } }) {
   const searchParams = useSearchParams();
-  const { firestore } = useFirebase();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
 
-  const userDocRef = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
-    return doc(firestore, 'users', user.uid);
-  }, [firestore, user]);
-
-  const { data: userProfile, isLoading: isProfileLoading } = useDoc(userDocRef);
+  // For all users (registered or anonymous), we get displayName and avatarUrl from URL params.
+  const displayName = searchParams.get('displayName') || 'Invitado';
+  const avatarUrl = searchParams.get('avatarUrl') || undefined;
 
   const audioMuted = searchParams.get('audioMuted') === 'true';
   const videoMuted = searchParams.get('videoMuted') === 'true';
   
-  if (isUserLoading || isProfileLoading) {
+  // We still want to make sure we have a user (even anonymous) before joining
+  if (isUserLoading) {
       return <div className="flex h-screen w-full items-center justify-center">Cargando reunión...</div>;
   }
   
+  // Though the lobby should handle this, it's a good failsafe.
+  // In a real-world scenario, the lobby would have already created an anonymous session.
   if (!user) {
-      router.replace('/login');
+      router.replace(`/lobby/${params.roomName}`);
       return null;
   }
-
 
   return (
     <main>
       <MeetingRoom
         roomName={params.roomName}
-        displayName={userProfile?.displayName}
-        avatarUrl={userProfile?.profilePictureUrl}
+        displayName={displayName}
+        avatarUrl={avatarUrl}
         startWithAudioMuted={audioMuted}
         startWithVideoMuted={videoMuted}
       />

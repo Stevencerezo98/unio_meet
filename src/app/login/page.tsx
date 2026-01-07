@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Video } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { useFirebase } from '@/firebase';
+import { useFirebase, useUser } from '@/firebase';
 
 function LoginHeader() {
     return (
@@ -40,10 +40,12 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { auth, user, isUserLoading } = useFirebase();
+  const { auth } = useFirebase();
+  const { user, isUserLoading } = useUser();
 
   useEffect(() => {
-    if (!isUserLoading && user) {
+    // Redirect if a non-anonymous user is already logged in
+    if (!isUserLoading && user && !user.isAnonymous) {
         router.replace('/start');
     }
   }, [user, isUserLoading, router]);
@@ -75,7 +77,8 @@ export default function LoginPage() {
     }
   };
 
-  if (isUserLoading || user) {
+  // Show loading screen while checking auth state or if user is already logged in and redirecting
+  if (isUserLoading || (user && !user.isAnonymous)) {
       return <div className="flex min-h-screen items-center justify-center">Cargando...</div>;
   }
 

@@ -19,8 +19,9 @@ export default function LobbyRoom() {
   const { firestore } = useFirebase();
   const { user } = useUser();
   
+  // User profile is only relevant for registered users
   const userDocRef = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
+    if (!firestore || !user || user.isAnonymous) return null;
     return doc(firestore, 'users', user.uid);
   }, [firestore, user]);
 
@@ -45,11 +46,14 @@ export default function LobbyRoom() {
   const roomName = decodeURIComponent(params.roomName as string);
 
   useEffect(() => {
-    if (userProfile) {
+    // If the user is registered and we have their profile, use that data.
+    if (user && !user.isAnonymous && userProfile) {
       setDisplayName(userProfile.displayName || '');
       setAvatarUrl(userProfile.profilePictureUrl || null);
-    } else if (!isProfileLoading && user) {
-      setDisplayName(user.displayName || 'Usuario');
+    } else if (user) {
+      // For anonymous users or registered users still loading their profile,
+      // provide a default name. They can change it.
+      setDisplayName(user.displayName || 'Invitado');
     }
   }, [userProfile, isProfileLoading, user]);
 
@@ -94,33 +98,37 @@ export default function LobbyRoom() {
 
 
   const handleJoinMeeting = () => {
-    // 1. Update user profile
-    if (userDocRef) {
-        updateDocumentNonBlocking(userDocRef, { 
-            displayName: displayName,
-            profilePictureUrl: avatarUrl || ''
-        });
-    }
-
-    // 2. Add to meeting history
-    if (firestore && user) {
-      const historyColRef = collection(firestore, 'users', user.uid, 'meetingHistory');
-      addDocumentNonBlocking(historyColRef, {
-        roomName: roomName,
-        joinedAt: serverTimestamp(),
-      });
+    // 1. If user is registered, update their profile and meeting history.
+    if (user && !user.isAnonymous) {
+        if (userDocRef) {
+            updateDocumentNonBlocking(userDocRef, { 
+                displayName: displayName,
+                profilePictureUrl: avatarUrl || ''
+            });
+        }
+        if (firestore) {
+          const historyColRef = collection(firestore, 'users', user.uid, 'meetingHistory');
+          addDocumentNonBlocking(historyColRef, {
+            roomName: roomName,
+            joinedAt: serverTimestamp(),
+          });
+        }
     }
     
-    // 3. Stop media tracks
+    // 2. Stop media tracks
     if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
     }
 
-    // 4. Navigate to meeting
+    // 3. Navigate to meeting, passing display name and avatar for all user types.
     const query = new URLSearchParams({
       audioMuted: String(isAudioMuted),
       videoMuted: String(isVideoMuted || !hasPermissions),
+      displayName: displayName,
     });
+    if (avatarUrl) {
+      query.set('avatarUrl', avatarUrl);
+    }
     
     router.push(`/meeting/${params.roomName}?${query.toString()}`);
   };
@@ -259,7 +267,7 @@ export default function LobbyRoom() {
               size="lg"
               className="w-full h-14 text-xl"
               onClick={handleJoinMeeting}
-              disabled={!displayName || isProfileLoading || isLoading}
+              disabled={!displayName || (user && !user.isAnonymous && isProfileLoading) || isLoading}
             >
               {isProfileLoading || isLoading ? 'Cargando...' : 'Unirse a la Reunión'}
             </Button>
