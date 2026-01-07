@@ -1,26 +1,23 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getAuth, signInAnonymously } from 'firebase/auth';
 
-// NOTE: This middleware is illustrative.
-// In a real app, you'd use Firebase server-side auth helpers
-// to securely validate the session.
+// This middleware logic is simplified for demonstration.
+// In a production app, you'd use server-side helpers to securely validate Firebase sessions.
 export function middleware(request: NextRequest) {
-  const sessionCookie = request.cookies.get('firebase-session'); // Example cookie name
+  const sessionCookie = request.cookies.get('session'); // Using a generic cookie name for the example
 
   const isAuthPage = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/register');
   
-  // Pages that require a registered user session
-  const protectedUserPages = ['/start', '/settings'];
-  const isProtectedUserPage = protectedUserPages.some(p => request.nextUrl.pathname.startsWith(p));
+  // The settings page is the only one that strictly requires a non-anonymous, registered user.
+  const isProtectedUserPage = request.nextUrl.pathname.startsWith('/settings');
 
-  // If trying to access a page that requires a registered user, redirect to login
+  // If trying to access a protected page without a session, redirect to login.
   if (isProtectedUserPage && !sessionCookie) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // If on an auth page with a session, redirect to the start page
+  // If on an auth page with a session, redirect to the start page.
   if (isAuthPage && sessionCookie) {
     return NextResponse.redirect(new URL('/start', request.url));
   }

@@ -18,18 +18,34 @@ import { es } from 'date-fns/locale';
 
 function StartHeader() {
   const router = useRouter();
-  const { isStandalone } = usePWA();
-  const headerLink = '/start';
+  const { user, isUserLoading } = useUser();
+  const isRegisteredUser = user && !user.isAnonymous;
 
   return (
     <header className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center">
-      <Link href={headerLink} className="flex items-center gap-2 text-foreground">
+      <Link href="/start" className="flex items-center gap-2 text-foreground">
         <Video className="h-7 w-7 text-primary" />
         <span className="text-2xl font-bold">Unio</span>
       </Link>
-      <Button variant="ghost" size="icon" onClick={() => router.push('/settings')}>
-        <Settings className="h-6 w-6" />
-      </Button>
+      
+      {!isUserLoading && (
+        <div className="flex items-center gap-2">
+            {isRegisteredUser ? (
+                 <Button variant="ghost" size="icon" onClick={() => router.push('/settings')}>
+                    <Settings className="h-6 w-6" />
+                </Button>
+            ) : (
+                <>
+                    <Button variant="ghost" asChild>
+                        <Link href="/login">Iniciar Sesión</Link>
+                    </Button>
+                    <Button asChild>
+                        <Link href="/register">Crear Cuenta</Link>
+                    </Button>
+                </>
+            )}
+        </div>
+      )}
     </header>
   );
 }
@@ -40,7 +56,8 @@ function RecentMeetings() {
   const router = useRouter();
 
   const historyQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
+    // Only create a query if we have a registered user and firestore is available
+    if (!user || user.isAnonymous || !firestore) return null;
     return query(
       collection(firestore, 'users', user.uid, 'meetingHistory'),
       orderBy('joinedAt', 'desc'),
@@ -58,6 +75,11 @@ function RecentMeetings() {
 
   const handleRejoin = (roomName: string) => {
     router.push(`/lobby/${encodeURIComponent(roomName)}`);
+  }
+
+  // Don't render anything if the user isn't a registered user
+  if (!user || user.isAnonymous) {
+      return null;
   }
 
   if (isUserLoading || isLoading) {
@@ -79,7 +101,7 @@ function RecentMeetings() {
   }
 
   if (!meetings || meetings.length === 0) {
-    return null;
+    return null; // Also don't render if there's no meeting history
   }
 
   return (
@@ -124,14 +146,7 @@ function RecentMeetings() {
 export default function StartPage() {
   const [showSplash, setShowSplash] = useState(true);
   const { isStandalone } = usePWA();
-  const { user, isUserLoading } = useUser();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isUserLoading && !user) {
-        router.replace('/login');
-    }
-  }, [user, isUserLoading, router]);
+  const { isUserLoading } = useUser();
 
   useEffect(() => {
     if (isStandalone) {
@@ -149,11 +164,11 @@ export default function StartPage() {
     }
   }, [isStandalone]);
   
-  if (isUserLoading || !user) {
+  if (isUserLoading) {
     return <SplashScreen />;
   }
 
-  if (showSplash) {
+  if (showSplash && !isUserLoading) {
     return <SplashScreen />;
   }
 
