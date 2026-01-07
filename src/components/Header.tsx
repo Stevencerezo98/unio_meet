@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Video } from 'lucide-react';
+import { Video, ChevronDown } from 'lucide-react';
 import { Button } from './ui/button';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
