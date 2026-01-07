@@ -87,21 +87,17 @@ export function useJitsi({
     
     const updateParticipants = () => {
         if (!jitsiApi) return;
-        
-        const allParticipantsInfo = jitsiApi.getParticipantsInfo();
         const newParticipantsMap = new Map<string, JitsiParticipant>();
 
-        // Ensure local participant is added correctly and only once.
-        const localInfo = allParticipantsInfo.find(p => p.local);
+        const localInfo = jitsiApi.getParticipantsInfo().find(p => p.local);
         if (localInfo) {
             newParticipantsMap.set(localInfo.id, {
                 ...localInfo,
                 displayName: jitsiApi.getDisplayName(localInfo.id) || 'Me',
             });
         }
-
-        // Add remote participants, ensuring no duplicates.
-        allParticipantsInfo.forEach(p => {
+        
+        jitsiApi.getParticipantsInfo().forEach(p => {
             if (!p.local && !newParticipantsMap.has(p.id)) {
                  newParticipantsMap.set(p.id, {
                     ...p,
@@ -149,6 +145,9 @@ export function useJitsi({
   const toggleTileView = useCallback(() => api?.executeCommand('toggleTileView'), [api]);
   const toggleShareScreen = useCallback(() => api?.executeCommand('toggleShareScreen'), [api]);
   const hangup = useCallback(() => api?.executeCommand('hangup'), [api]);
+  const sendReaction = useCallback((reaction: string) => {
+    api?.executeCommand('sendReaction', reaction);
+  }, [api]);
 
   const controls = useMemo(
     () => ({
@@ -161,6 +160,7 @@ export function useJitsi({
       toggleTileView,
       toggleShareScreen,
       hangup,
+      sendReaction,
     }),
     [
       isAudioMuted,
@@ -172,6 +172,7 @@ export function useJitsi({
       toggleTileView,
       toggleShareScreen,
       hangup,
+      sendReaction,
     ]
   );
 

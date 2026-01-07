@@ -12,9 +12,11 @@ import {
   PhoneOff,
   Users,
   ScreenShareOff,
+  Smile,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface MeetingToolbarProps {
   isAudioMuted: boolean;
@@ -28,6 +30,7 @@ interface MeetingToolbarProps {
   toggleTileView: () => void;
   toggleSidebar: () => void;
   hangup: () => void;
+  sendReaction: (reaction: string) => void;
 }
 
 const ToolbarButton = ({
@@ -66,6 +69,51 @@ const ToolbarButton = ({
   </Tooltip>
 );
 
+const ReactionsPopover = ({ onReactionClick }: { onReactionClick: (reaction: string) => void }) => {
+    const reactions = [
+        { emoji: '👍', name: 'like' },
+        { emoji: '❤️', name: 'love' },
+        { emoji: '👏', name: 'clap' },
+        { emoji: '😂', name: 'laugh' },
+        { emoji: '🎉', name: 'celebrate' },
+    ];
+
+    return (
+        <Popover>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <PopoverTrigger asChild>
+                        <Button
+                            size="icon"
+                            className="rounded-full h-14 w-14 bg-black/40 hover:bg-black/60 text-white"
+                        >
+                            <Smile className="h-6 w-6" />
+                        </Button>
+                    </PopoverTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>Reacciones</p>
+                </TooltipContent>
+            </Tooltip>
+            <PopoverContent className="w-auto bg-background/80 backdrop-blur-md border-border p-2">
+                <div className="flex gap-2">
+                    {reactions.map((r) => (
+                        <Button
+                            key={r.name}
+                            variant="ghost"
+                            size="icon"
+                            className="text-2xl"
+                            onClick={() => onReactionClick(r.name)}
+                        >
+                            {r.emoji}
+                        </Button>
+                    ))}
+                </div>
+            </PopoverContent>
+        </Popover>
+    );
+};
+
 export default function MeetingToolbar({
   isAudioMuted,
   isVideoMuted,
@@ -78,6 +126,7 @@ export default function MeetingToolbar({
   toggleTileView,
   toggleSidebar,
   hangup,
+  sendReaction,
 }: MeetingToolbarProps) {
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
@@ -102,6 +151,8 @@ export default function MeetingToolbar({
               <ScreenShare className="h-6 w-6" />
             )}
           </ToolbarButton>
+
+          <ReactionsPopover onReactionClick={sendReaction} />
 
           <ToolbarButton
             onClick={toggleTileView}

@@ -68,6 +68,7 @@ export default function MeetingRoom({
               hangup={controls.hangup}
               isSidebarOpen={isSidebarOpen}
               toggleSidebar={toggleSidebar}
+              sendReaction={controls.sendReaction}
             />
             <ParticipantSidebar
               isOpen={isSidebarOpen}
