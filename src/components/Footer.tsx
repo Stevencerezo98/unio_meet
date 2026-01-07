@@ -10,15 +10,24 @@ import { usePWA } from '@/hooks/usePWA';
 const FooterLink = ({ href, children }: { href: string; children: React.ReactNode }) => {
   const { canInstall, install } = usePWA();
 
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleClick = (e: React.MouseEvent) => {
     if (href === '#install-pwa' && canInstall) {
       e.preventDefault();
       install();
     }
   };
+
+  if (href === '#install-pwa') {
+    if (!canInstall) return null;
+    return (
+       <button onClick={handleClick} className="text-sm text-muted-foreground transition-colors hover:text-foreground text-left">
+        {children}
+      </button>
+    )
+  }
   
   return (
-    <Link href={href} onClick={handleClick} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+    <Link href={href} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
         {children}
     </Link>
   );

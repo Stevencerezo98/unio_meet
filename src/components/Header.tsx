@@ -19,9 +19,9 @@ import { usePWA } from '@/hooks/usePWA';
 const NavItem = ({ item }: { item: NavItemType }) => {
   const { canInstall, install } = usePWA();
 
-  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url?: string) => {
-    if (url === '#install-pwa' && canInstall) {
-      e.preventDefault();
+  const handleInstallClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (canInstall) {
       install();
     }
   };
@@ -36,20 +36,41 @@ const NavItem = ({ item }: { item: NavItemType }) => {
                 </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
-                {item.items.map((subItem, index) => (
+                {item.items.map((subItem, index) => {
+                  if (subItem.url === '#install-pwa') {
+                    if (!canInstall) return null;
+                    return (
+                       <DropdownMenuItem key={index} asChild>
+                          <button onClick={handleInstallClick} className="w-full text-left">
+                            {subItem.text}
+                          </button>
+                        </DropdownMenuItem>
+                    )
+                  }
+                  return (
                     <DropdownMenuItem key={index} asChild>
-                        <Link href={subItem.url} onClick={(e) => handleLinkClick(e, subItem.url)}>
+                        <Link href={subItem.url}>
                             {subItem.text}
                         </Link>
                     </DropdownMenuItem>
-                ))}
+                  )
+                })}
             </DropdownMenuContent>
         </DropdownMenu>
     );
   }
+
+  if (item.url === '#install-pwa') {
+     if (!canInstall) return null;
+     return (
+        <button onClick={handleInstallClick} className="transition-colors hover:text-primary text-sm font-medium">
+          {item.text}
+        </button>
+     )
+  }
   
   return (
-    <Link href={item.url || '#'} onClick={(e) => handleLinkClick(e, item.url)} className="transition-colors hover:text-primary">
+    <Link href={item.url || '#'} className="transition-colors hover:text-primary text-sm font-medium">
         {item.text}
     </Link>
   );
