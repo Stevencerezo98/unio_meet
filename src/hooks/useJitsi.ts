@@ -55,7 +55,9 @@ export function useJitsi({
       configOverwrite: {
         startWithAudioMuted: startWithAudioMuted,
         startWithVideoMuted: startWithVideoMuted,
-        prejoinPageEnabled: false,
+        prejoinConfig: {
+            enabled: false,
+        },
         disableDeepLinking: true,
         enableWelcomePage: false,
         transcribingEnabled: false,
@@ -83,31 +85,35 @@ export function useJitsi({
     setApi(jitsiApi);
     
     const updateParticipants = () => {
-      if (!jitsiApi) return;
-      
-      const jitsiParticipants = jitsiApi.getParticipantsInfo();
-      const localUser = jitsiApi.getParticipantsInfo().find(p => p.local);
-      
-      const uniqueParticipants = new Map<string, JitsiParticipant>();
+        if (!jitsiApi) return;
+        
+        const allParticipants = jitsiApi.getParticipantsInfo();
+        const localUser = allParticipants.find(p => p.local);
+        const remoteParticipants = allParticipants.filter(p => !p.local);
 
-      if(localUser){
-        uniqueParticipants.set(localUser.id, {
-          ...localUser,
-          displayName: jitsiApi.getDisplayName(localUser.id) || 'Me',
-        });
-      }
+        const uniqueParticipants = new Map<string, JitsiParticipant>();
 
-      jitsiParticipants.forEach(p => {
-        if (!uniqueParticipants.has(p.id)) {
-          uniqueParticipants.set(p.id, {
-            ...p,
-            displayName: p.displayName || 'Guest',
-          });
+        // Add local user first
+        if (localUser) {
+            uniqueParticipants.set(localUser.id, {
+            ...localUser,
+            displayName: jitsiApi.getDisplayName(localUser.id) || 'Me',
+            });
         }
-      });
-      
-      setParticipants(Array.from(uniqueParticipants.values()));
+        
+        // Add remote users
+        remoteParticipants.forEach(p => {
+            if (!uniqueParticipants.has(p.id)) {
+                uniqueParticipants.set(p.id, {
+                ...p,
+                displayName: p.displayName || 'Guest',
+                });
+            }
+        });
+        
+        setParticipants(Array.from(uniqueParticipants.values()));
     }
+
 
     jitsiApi.on('videoConferenceJoined', (localUser: {id: string}) => {
       setIsJoined(true);
