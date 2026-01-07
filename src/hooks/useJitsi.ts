@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { JitsiApi, JitsiParticipant } from '@/lib/types';
 
 interface UseJitsiProps {
@@ -31,6 +31,11 @@ export function useJitsi({
   const [isVideoMuted, setVideoMuted] = useState(true);
   const [isTileView, setTileView] = useState(false);
   const [isScreenSharing, setScreenSharing] = useState(false);
+  const onMeetingEndRef = useRef(onMeetingEnd);
+
+  useEffect(() => {
+    onMeetingEndRef.current = onMeetingEnd;
+  }, [onMeetingEnd]);
 
   const memoizedConfig = useMemo(() => JSON.stringify(configOverwrite), [configOverwrite]);
   const memoizedInterfaceConfig = useMemo(() => JSON.stringify(interfaceConfigOverwrite), [interfaceConfigOverwrite]);
@@ -40,23 +45,20 @@ export function useJitsi({
     if (!jitsiApi) return;
   
     const remoteParticipants = jitsiApi.getParticipantsInfo();
-    const localId = jitsiApi.getDisplayName('local') ? 'local' : (remoteParticipants.find(p => p.formattedDisplayName.endsWith('(me)'))?.id || 'local');
+    const localId = 'local';
     const participantMap = new Map<string, JitsiParticipant>();
 
-    // Add local participant first
-    if(localId) {
-        participantMap.set(localId, {
-            id: localId,
-            displayName: userInfo?.displayName || 'You',
-            avatarURL: jitsiApi.getAvatarURL?.(localId),
-            role: 'moderator',
-            formattedDisplayName: `${userInfo?.displayName || 'You'} (you)`,
-        });
-    }
+    const localParticipant = jitsiApi.getParticipantsInfo().find(p => p.id === localId) || {
+        id: localId,
+        displayName: userInfo?.displayName || 'You',
+        avatarURL: jitsiApi.getAvatarURL?.(localId),
+        role: 'moderator',
+        formattedDisplayName: `${userInfo?.displayName || 'You'} (you)`,
+    };
+    participantMap.set(localId, localParticipant as JitsiParticipant);
   
-    // Add remote participants
     remoteParticipants.forEach(p => {
-        if (!p.formattedDisplayName.endsWith('(me)')) {
+        if (!participantMap.has(p.id)) {
             participantMap.set(p.id, p);
         }
     });
@@ -90,7 +92,7 @@ export function useJitsi({
     };
 
     const handleReadyToClose = () => {
-      onMeetingEnd?.();
+      onMeetingEndRef.current?.();
     };
 
     const handleParticipantEvent = () => {
@@ -132,7 +134,7 @@ export function useJitsi({
         setApi(null);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parentNode, roomName, domain, memoizedUserInfo, memoizedConfig, memoizedInterfaceConfig, updateParticipants, onMeetingEnd]);
+  }, [parentNode, roomName, domain, memoizedUserInfo, memoizedConfig, memoizedInterfaceConfig, updateParticipants]);
 
   const toggleAudio = useCallback(() => {
     api?.executeCommand('toggleAudio');
