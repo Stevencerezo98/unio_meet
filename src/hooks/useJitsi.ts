@@ -84,19 +84,38 @@ export function useJitsi({
     
     const updateParticipants = () => {
       if (!jitsiApi) return;
+      
       const jitsiParticipants = jitsiApi.getParticipantsInfo();
-      // Jitsi now includes local participant in getParticipantsInfo
-      const allParticipants = jitsiParticipants.map(p => ({
-        ...p,
-        displayName: p.local ? (jitsiApi.getDisplayName(p.id) || 'Me') : (p.displayName || 'Guest'),
-      }));
-      setParticipants(allParticipants);
+      const localUser = jitsiApi.getParticipantsInfo().find(p => p.local);
+      
+      const uniqueParticipants = new Map<string, JitsiParticipant>();
+
+      if(localUser){
+        uniqueParticipants.set(localUser.id, {
+          ...localUser,
+          displayName: jitsiApi.getDisplayName(localUser.id) || 'Me',
+        });
+      }
+
+      jitsiParticipants.forEach(p => {
+        if (!uniqueParticipants.has(p.id)) {
+          uniqueParticipants.set(p.id, {
+            ...p,
+            displayName: p.displayName || 'Guest',
+          });
+        }
+      });
+      
+      setParticipants(Array.from(uniqueParticipants.values()));
     }
 
-    jitsiApi.on('videoConferenceJoined', () => {
+    jitsiApi.on('videoConferenceJoined', (localUser: {id: string}) => {
       setIsJoined(true);
       jitsiApi.isAudioMuted().then(setAudioMuted);
       jitsiApi.isVideoMuted().then(setVideoMuted);
+       if (displayName) {
+        jitsiApi.executeCommand('displayName', displayName);
+      }
       updateParticipants();
     });
 
@@ -118,7 +137,7 @@ export function useJitsi({
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parentNode, roomName, domain]);
+  }, [parentNode, roomName, domain, displayName, startWithAudioMuted, startWithVideoMuted]);
   
   const toggleAudio = useCallback(() => api?.executeCommand('toggleAudio'), [api]);
   const toggleVideo = useCallback(() => api?.executeCommand('toggleVideo'), [api]);
