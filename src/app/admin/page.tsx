@@ -1,10 +1,9 @@
 
-import { loadLandingContent, saveLandingContent } from '../actions';
+import { loadLandingContent } from '../actions';
 import { AdminForm } from './_components/AdminForm';
 import { LogoutButton } from './_components/LogoutButton';
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -27,7 +26,7 @@ export default async function AdminPage() {
         </CardHeader>
       </Card>
       
-      <AdminForm content={content} onSave={saveLandingContent} />
+      <AdminForm content={content} />
     </div>
   );
 }

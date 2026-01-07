@@ -4,6 +4,7 @@ import { useForm, useFieldArray, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import type { LandingContent } from '@/lib/landing-content';
+import { saveLandingContent } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -71,10 +72,9 @@ const landingContentSchema = z.object({
 
 interface AdminFormProps {
   content: LandingContent;
-  onSave: (data: LandingContent) => Promise<{ success: boolean; error?: string }>;
 }
 
-export function AdminForm({ content, onSave }: AdminFormProps) {
+export function AdminForm({ content }: AdminFormProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const formMethods = useForm<LandingContent>({
@@ -125,7 +125,7 @@ export function AdminForm({ content, onSave }: AdminFormProps) {
   const onSubmit = async (data: LandingContent) => {
     setIsLoading(true);
     try {
-      const result = await onSave(data);
+      const result = await saveLandingContent(data);
       if (result.success) {
         toast({ title: 'Success!', description: 'Content saved successfully.' });
       } else {
