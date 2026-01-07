@@ -86,34 +86,34 @@ export function useJitsi({
     setApi(jitsiApi);
     
     const updateParticipants = () => {
-      if (!jitsiApi) return;
-      const newParticipantsMap = new Map<string, JitsiParticipant>();
+        if (!jitsiApi) return;
+        
+        const newParticipantsMap = new Map<string, JitsiParticipant>();
+        
+        // Get all participants from the API
+        const allParticipants = jitsiApi.getParticipantsInfo();
 
-      // Get local participant first
-      const localId = jitsiApi.getParticipantsInfo().find(p => p.local)?.id;
-      
-      if (localId) {
-        const localParticipantInfo = jitsiApi.getParticipantsInfo().find(p => p.id === localId && p.local);
-        if (localParticipantInfo) {
-          newParticipantsMap.set(localParticipantInfo.id, {
-            ...localParticipantInfo,
-            displayName: jitsiApi.getDisplayName(localParticipantInfo.id) || 'Me',
-          });
+        // Find and add the local participant first
+        const localParticipant = allParticipants.find(p => p.local);
+        if (localParticipant) {
+            newParticipantsMap.set(localParticipant.id, {
+                ...localParticipant,
+                displayName: jitsiApi.getDisplayName(localParticipant.id) || 'Me',
+            });
         }
-      }
-
-      // Add other non-local participants
-      jitsiApi.getParticipantsInfo().forEach(p => {
-          if (!p.local && !newParticipantsMap.has(p.id)) {
-               newParticipantsMap.set(p.id, {
-                  ...p,
-                  displayName: p.displayName || 'Guest'
-              });
-          }
-      });
-      
-      setParticipants(Array.from(newParticipantsMap.values()));
-    }
+        
+        // Add other non-local participants, ensuring no duplicates
+        allParticipants.forEach(p => {
+            if (!p.local && !newParticipantsMap.has(p.id)) {
+                newParticipantsMap.set(p.id, {
+                    ...p,
+                    displayName: p.displayName || 'Guest'
+                });
+            }
+        });
+        
+        setParticipants(Array.from(newParticipantsMap.values()));
+    };
 
 
     jitsiApi.on('videoConferenceJoined', () => {
@@ -144,7 +144,7 @@ export function useJitsi({
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parentNode, roomName, domain, startWithAudioMuted, startWithVideoMuted, displayName, api]);
+  }, [parentNode, roomName, domain, startWithAudioMuted, startWithVideoMuted, displayName]);
   
   const toggleAudio = useCallback(() => api?.executeCommand('toggleAudio'), [api]);
   const toggleVideo = useCallback(() => api?.executeCommand('toggleVideo'), [api]);
