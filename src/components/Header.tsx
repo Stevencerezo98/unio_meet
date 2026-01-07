@@ -53,13 +53,6 @@ export default function Header() {
             <DropdownMenuItem>Eventos Virtuales</DropdownMenuItem>
           </DropdownNavItem>
           
-          <DropdownNavItem label="Soluciones">
-            <DropdownMenuItem>Educación</DropdownMenuItem>
-            <DropdownMenuItem>Salud</DropdownMenuItem>
-            <DropdownMenuItem>Gobierno</DropdownMenuItem>
-            <DropdownMenuItem>Empresas</DropdownMenuItem>
-          </DropdownNavItem>
-          
           <NavItem href="#">Planes y Precios</NavItem>
 
           <DropdownNavItem label="Recursos">
