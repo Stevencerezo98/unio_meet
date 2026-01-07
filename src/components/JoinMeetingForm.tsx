@@ -20,22 +20,24 @@ export default function JoinMeetingForm() {
   };
 
   return (
-    <Card className="w-full max-w-md shadow-2xl border-neutral-800">
+    <Card className="w-full max-w-md shadow-2xl border-neutral-800 bg-white/5 backdrop-blur-xl">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-2xl">
-            <Video className="h-6 w-6"/>
-            Join a Meeting
+          <Video className="h-6 w-6" />
+          Unirse a una reunión
         </CardTitle>
-        <CardDescription>Enter a room name to start or join a video call.</CardDescription>
+        <CardDescription>
+          Introduce un nombre de sala para iniciar o unirte a una videollamada.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="roomName">Room Name</Label>
+            <Label htmlFor="roomName">Nombre de la Sala</Label>
             <Input
               id="roomName"
               type="text"
-              placeholder="E.g., team-sync"
+              placeholder="ej: reunion-equipo"
               value={roomName}
               onChange={(e) => setRoomName(e.target.value)}
               required
@@ -43,7 +45,7 @@ export default function JoinMeetingForm() {
             />
           </div>
           <Button type="submit" size="lg" className="w-full h-12 text-base">
-            Join Meeting
+            Unirse a la reunión
           </Button>
         </form>
       </CardContent>
