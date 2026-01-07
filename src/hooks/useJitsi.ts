@@ -29,6 +29,10 @@ export function useJitsi({
   const [isTileView, setTileView] = useState(false);
   const [isScreenSharing, setScreenSharing] = useState(false);
 
+  const memoizedConfig = useMemo(() => JSON.stringify(configOverwrite), [configOverwrite]);
+  const memoizedInterfaceConfig = useMemo(() => JSON.stringify(interfaceConfigOverwrite), [interfaceConfigOverwrite]);
+  const memoizedUserInfo = useMemo(() => JSON.stringify(userInfo), [userInfo]);
+
   useEffect(() => {
     if (typeof window === 'undefined' || !window.JitsiMeetExternalAPI || !parentNode.current) {
       return;
@@ -39,20 +43,35 @@ export function useJitsi({
       parentNode: parentNode.current,
       width: '100%',
       height: '100%',
-      userInfo,
-      configOverwrite,
-      interfaceConfigOverwrite,
+      userInfo: JSON.parse(memoizedUserInfo),
+      configOverwrite: JSON.parse(memoizedConfig),
+      interfaceConfigOverwrite: JSON.parse(memoizedInterfaceConfig),
     });
 
     setApi(jitsiApi);
 
     const updateParticipants = () => {
       if (!jitsiApi) return;
-      const currentParticipants = jitsiApi.getParticipantsInfo();
-      setParticipants(currentParticipants);
+      const remoteParticipants = jitsiApi.getParticipantsInfo();
+      const localParticipant = jitsiApi.getAvatarURL && {
+        id: 'local',
+        displayName: userInfo?.displayName || 'You',
+        avatarURL: jitsiApi.getAvatarURL('local'),
+        role: 'moderator',
+        formattedDisplayName: `${userInfo?.displayName || 'You'} (you)`,
+      };
+      
+      const allParticipants = localParticipant ? [localParticipant, ...remoteParticipants] : remoteParticipants;
+      
+      const uniqueParticipants = allParticipants.filter(
+        (participant, index, self) =>
+          index === self.findIndex((p) => p.id === participant.id)
+      );
+
+      setParticipants(uniqueParticipants);
     };
 
-    const handleVideoConferenceJoined = ({ id, displayName }: { id: string; displayName: string; }) => {
+    const handleVideoConferenceJoined = () => {
       jitsiApi.isAudioMuted().then(setAudioMuted);
       jitsiApi.isVideoMuted().then(setVideoMuted);
       updateParticipants();
@@ -65,6 +84,10 @@ export function useJitsi({
     const handleParticipantLeft = (participant: any) => {
       updateParticipants();
     };
+    
+    const handleParticipantUpdated = () => {
+        updateParticipants();
+    }
 
     const handleAudioMuteStatusChanged = (payload: { muted: boolean }) => {
       setAudioMuted(payload.muted);
@@ -85,16 +108,22 @@ export function useJitsi({
     jitsiApi.on('videoConferenceJoined', handleVideoConferenceJoined);
     jitsiApi.on('participantJoined', handleParticipantJoined);
     jitsiApi.on('participantLeft', handleParticipantLeft);
+    jitsiApi.on('participantKickedOut', handleParticipantLeft);
+    jitsiApi.on('displayNameChange', handleParticipantUpdated);
+    jitsiApi.on('avatarChanged', handleParticipantUpdated);
+
     jitsiApi.on('audioMuteStatusChanged', handleAudioMuteStatusChanged);
     jitsiApi.on('videoMuteStatusChanged', handleVideoMuteStatusChanged);
     jitsiApi.on('tileViewChanged', handleTileViewChanged);
     jitsiApi.on('screenSharingStatusChanged', handleScreenSharingStatusChanged);
 
     return () => {
-      jitsiApi.dispose();
-      setApi(null);
+        if(api) {
+            api.dispose();
+            setApi(null);
+        }
     };
-  }, [parentNode, roomName, domain, JSON.stringify(userInfo), JSON.stringify(configOverwrite), JSON.stringify(interfaceConfigOverwrite)]);
+  }, [parentNode, roomName, domain, memoizedUserInfo, memoizedConfig, memoizedInterfaceConfig]);
 
   const toggleAudio = useCallback(() => {
     api?.executeCommand('toggleAudio');
