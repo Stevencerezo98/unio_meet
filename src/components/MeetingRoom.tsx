@@ -5,13 +5,19 @@ import { useJitsi } from '@/hooks/useJitsi';
 import MeetingToolbar from './MeetingToolbar';
 import ParticipantSidebar from './ParticipantSidebar';
 import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function MeetingRoom() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const jitsiContainerRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   const roomName = useMemo(() => `Unio-Premium-Meeting-${Math.random().toString(36).substr(2, 9)}`, []);
   const userName = 'Demo User';
+
+  const onMeetingEnd = () => {
+    router.push('/thank-you');
+  };
 
   const configOverwrite = {
     startWithAudioMuted: true,
@@ -42,9 +48,10 @@ export default function MeetingRoom() {
     DISABLE_VIDEO_BACKGROUND: false,
   };
 
-  const { api, participants, controls } = useJitsi({
+  const { isJoined, api, participants, controls } = useJitsi({
     roomName,
     parentNode: jitsiContainerRef,
+    onMeetingEnd,
     userInfo: { displayName: userName },
     configOverwrite,
     interfaceConfigOverwrite,
@@ -59,14 +66,14 @@ export default function MeetingRoom() {
       <div className="relative w-full h-full rounded-[24px] overflow-hidden bg-black shadow-2xl border border-neutral-800">
         <div ref={jitsiContainerRef} className="w-full h-full" />
         
-        {!api && (
+        {!isJoined && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 z-10">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
                 <p className="mt-4 text-lg text-foreground">Joining meeting room...</p>
             </div>
         )}
 
-        {api && (
+        {isJoined && (
           <>
             <MeetingToolbar
               isAudioMuted={controls.isAudioMuted}

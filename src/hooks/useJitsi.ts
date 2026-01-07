@@ -12,6 +12,7 @@ interface UseJitsiProps {
   };
   configOverwrite?: object;
   interfaceConfigOverwrite?: object;
+  onMeetingEnd?: () => void;
 }
 
 export function useJitsi({
@@ -21,8 +22,10 @@ export function useJitsi({
   userInfo,
   configOverwrite,
   interfaceConfigOverwrite,
+  onMeetingEnd
 }: UseJitsiProps) {
   const [api, setApi] = useState<JitsiApi | null>(null);
+  const [isJoined, setIsJoined] = useState(false);
   const [participants, setParticipants] = useState<JitsiParticipant[]>([]);
   const [isAudioMuted, setAudioMuted] = useState(true);
   const [isVideoMuted, setVideoMuted] = useState(true);
@@ -37,29 +40,22 @@ export function useJitsi({
     if (!jitsiApi) return;
   
     const remoteParticipants = jitsiApi.getParticipantsInfo();
-    
-    // The local participant object from the API might be incomplete initially
     const localId = jitsiApi.getDisplayName('local') ? 'local' : (remoteParticipants.find(p => p.formattedDisplayName.endsWith('(me)'))?.id || 'local');
-
-    const localParticipant = {
-      id: localId,
-      displayName: userInfo?.displayName || 'You',
-      avatarURL: jitsiApi.getAvatarURL?.(localId),
-      role: 'moderator',
-      formattedDisplayName: `${userInfo?.displayName || 'You'} (you)`,
-    };
-  
     const participantMap = new Map<string, JitsiParticipant>();
 
-    // Add local participant first to ensure it's in the list
+    // Add local participant first
     if(localId) {
-        participantMap.set(localId, localParticipant);
+        participantMap.set(localId, {
+            id: localId,
+            displayName: userInfo?.displayName || 'You',
+            avatarURL: jitsiApi.getAvatarURL?.(localId),
+            role: 'moderator',
+            formattedDisplayName: `${userInfo?.displayName || 'You'} (you)`,
+        });
     }
   
-    // Add remote participants, overwriting any incomplete local participant info
-    // that might have come from the remote list.
+    // Add remote participants
     remoteParticipants.forEach(p => {
-        // Exclude the placeholder for the local user that Jitsi sometimes provides
         if (!p.formattedDisplayName.endsWith('(me)')) {
             participantMap.set(p.id, p);
         }
@@ -87,9 +83,14 @@ export function useJitsi({
     setApi(jitsiApi);
 
     const handleVideoConferenceJoined = () => {
+      setIsJoined(true);
       jitsiApi.isAudioMuted().then(setAudioMuted);
       jitsiApi.isVideoMuted().then(setVideoMuted);
       updateParticipants(jitsiApi);
+    };
+
+    const handleReadyToClose = () => {
+      onMeetingEnd?.();
     };
 
     const handleParticipantEvent = () => {
@@ -113,6 +114,7 @@ export function useJitsi({
     };
     
     jitsiApi.on('videoConferenceJoined', handleVideoConferenceJoined);
+    jitsiApi.on('readyToClose', handleReadyToClose);
     jitsiApi.on('participantJoined', handleParticipantEvent);
     jitsiApi.on('participantLeft', handleParticipantEvent);
     jitsiApi.on('participantKickedOut', handleParticipantEvent);
@@ -130,7 +132,7 @@ export function useJitsi({
         setApi(null);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parentNode, roomName, domain, memoizedUserInfo, memoizedConfig, memoizedInterfaceConfig, updateParticipants]);
+  }, [parentNode, roomName, domain, memoizedUserInfo, memoizedConfig, memoizedInterfaceConfig, updateParticipants, onMeetingEnd]);
 
   const toggleAudio = useCallback(() => {
     api?.executeCommand('toggleAudio');
@@ -177,5 +179,5 @@ export function useJitsi({
     ]
   );
 
-  return { api, participants, controls };
+  return { isJoined, api, participants, controls };
 }
