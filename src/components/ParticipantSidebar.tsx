@@ -19,11 +19,6 @@ export default function ParticipantSidebar({
   onClose,
   participants,
 }: ParticipantSidebarProps) {
-  const uniqueParticipants = participants.filter(
-    (participant, index, self) =>
-      index === self.findIndex((p) => p.id === participant.id)
-  );
-
   return (
     <aside
       className={cn(
@@ -33,14 +28,14 @@ export default function ParticipantSidebar({
     >
       <div className="flex flex-col h-full">
         <header className="flex items-center justify-between p-4 border-b border-neutral-700/50">
-          <h2 className="text-xl font-semibold">Participants ({uniqueParticipants.length})</h2>
+          <h2 className="text-xl font-semibold">Participants ({participants.length})</h2>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-5 w-5" />
           </Button>
         </header>
         <ScrollArea className="flex-1">
           <ul className="p-4 space-y-3">
-            {uniqueParticipants.map((p) => (
+            {participants.map((p) => (
               <li key={p.id} className="flex items-center gap-3">
                 <Avatar>
                   <AvatarImage src={p.avatarURL} alt={p.displayName} />

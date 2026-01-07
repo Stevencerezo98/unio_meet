@@ -63,40 +63,39 @@ export function useJitsi({
         TOOLBAR_ALWAYS_VISIBLE: false,
         DISABLE_VIDEO_BACKGROUND: false,
       },
+      onload: () => {
+        setApiReady(true);
+      }
     });
 
     setApi(jitsiApi);
-    setApiReady(true);
-
+    
     const updateParticipants = () => {
       if (!jitsiApi) return;
-      const participantMap = new Map<string, JitsiParticipant>();
       const jitsiParticipants = jitsiApi.getParticipantsInfo();
-      
-      const localParticipant = jitsiParticipants.find(p => p.local);
-      if(localParticipant) {
-        participantMap.set(localParticipant.id, {
-          ...localParticipant,
-          displayName: localParticipant.displayName || 'Me'
-        });
-      }
+      const participantMap = new Map<string, JitsiParticipant>();
 
+      // Add all participants to the map, overwriting duplicates.
+      // This ensures the list is always unique.
       jitsiParticipants.forEach(p => {
-        if (!participantMap.has(p.id)) {
-            participantMap.set(p.id, {
-                ...p,
-                displayName: p.displayName || 'Guest',
-            });
-        }
+        participantMap.set(p.id, {
+            ...p,
+            displayName: p.local ? (p.displayName || 'Me') : (p.displayName || 'Guest'),
+        });
       });
+      
       setParticipants(Array.from(participantMap.values()));
     }
 
-    jitsiApi.on('videoConferenceJoined', () => {
+    jitsiApi.on('videoConferenceJoined', (localUser: { id: string, displayName: string }) => {
       setIsJoined(true);
       jitsiApi.isAudioMuted().then(setAudioMuted);
       jitsiApi.isVideoMuted().then(setVideoMuted);
+      
+      // Initial participant update
       updateParticipants();
+
+      jitsiApi.executeCommand('setDisplayName', localUser.displayName);
     });
 
     jitsiApi.on('readyToClose', () => {
