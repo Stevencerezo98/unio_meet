@@ -12,8 +12,10 @@ import { useToast } from '@/hooks/use-toast';
 import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useUserSettings } from '@/hooks/use-user-settings';
 
 export default function LobbyRoom() {
+  const [settings, saveSettings] = useUserSettings();
   const [displayName, setDisplayName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isAudioMuted, setAudioMuted] = useState(true);
@@ -33,12 +35,19 @@ export default function LobbyRoom() {
   const roomName = decodeURIComponent(params.roomName as string);
 
   useEffect(() => {
-    setDisplayName(uniqueNamesGenerator({
-        dictionaries: [adjectives, colors, animals],
-        separator: ' ',
-        style: 'capital',
-    }));
-  }, []);
+    if (settings.name) {
+      setDisplayName(settings.name);
+    } else {
+      setDisplayName(uniqueNamesGenerator({
+          dictionaries: [adjectives, colors, animals],
+          separator: ' ',
+          style: 'capital',
+      }));
+    }
+    if (settings.avatar) {
+      setAvatarUrl(settings.avatar);
+    }
+  }, [settings]);
 
   const getMediaPermissions = useCallback(async () => {
     try {
@@ -158,7 +167,14 @@ export default function LobbyRoom() {
             <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
             {isVideoMuted && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                    <VideoOff className="h-16 w-16 text-white/50" />
+                    <div className="relative">
+                        <Avatar className="h-24 w-24 border-2 border-background">
+                            <AvatarImage src={avatarUrl ?? undefined} />
+                            <AvatarFallback className="text-4xl">
+                                {displayName?.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                        </Avatar>
+                    </div>
                 </div>
             )}
         </>

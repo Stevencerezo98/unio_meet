@@ -7,6 +7,8 @@ import MeetingToolbar from './MeetingToolbar';
 import ParticipantSidebar from './ParticipantSidebar';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 
 interface MeetingRoomProps {
     roomName: string;
@@ -44,11 +46,24 @@ export default function MeetingRoom({
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
+  
+  const showAvatar = isJoined && controls.isVideoMuted;
 
   return (
-    <div className="fixed inset-0 bg-background flex items-center justify-center p-4">
-      <div className="relative w-full h-full rounded-[24px] overflow-hidden bg-black shadow-2xl border border-neutral-800">
-        <div ref={jitsiContainerRef} className="w-full h-full" />
+    <div className="fixed inset-0 bg-background flex items-center justify-center p-0 md:p-4">
+      <div className="relative w-full h-full md:rounded-[24px] overflow-hidden bg-black shadow-2xl border-border">
+        {showAvatar && (
+             <div className="absolute inset-0 flex items-center justify-center z-0">
+                <Avatar className="h-40 w-40 border-4 border-background">
+                    <AvatarImage src={avatarUrl ?? undefined} />
+                    <AvatarFallback className="text-6xl">
+                        {displayName?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                </Avatar>
+            </div>
+        )}
+       
+        <div ref={jitsiContainerRef} className={`w-full h-full transition-opacity ${showAvatar ? 'opacity-0' : 'opacity-100'}`} />
         
         {!isApiReady && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 z-10">
