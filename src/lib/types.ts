@@ -4,6 +4,7 @@ export interface JitsiParticipant {
   avatarURL?: string;
   role?: string;
   formattedDisplayName: string;
+  local?: boolean;
 }
 
 export interface JitsiApi {

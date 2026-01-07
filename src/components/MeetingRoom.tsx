@@ -22,7 +22,7 @@ export default function MeetingRoom({ roomName: encodedRoomName }: MeetingRoomPr
     router.push('/thank-you');
   };
 
-  const { isJoined, api, participants, controls } = useJitsi({
+  const { isApiReady, isJoined, participants, controls } = useJitsi({
     roomName,
     parentNode: jitsiContainerRef,
     onMeetingEnd,
@@ -37,7 +37,7 @@ export default function MeetingRoom({ roomName: encodedRoomName }: MeetingRoomPr
       <div className="relative w-full h-full rounded-[24px] overflow-hidden bg-black shadow-2xl border border-neutral-800">
         <div ref={jitsiContainerRef} className="w-full h-full" />
         
-        {!isJoined && (
+        {!isApiReady && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 z-10">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
                 <p className="mt-4 text-lg text-foreground">Joining meeting room...</p>

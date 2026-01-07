@@ -17,6 +17,7 @@ export function useJitsi({
   onMeetingEnd
 }: UseJitsiProps) {
   const [api, setApi] = useState<JitsiApi | null>(null);
+  const [isApiReady, setApiReady] = useState(false);
   const [isJoined, setIsJoined] = useState(false);
   const [participants, setParticipants] = useState<JitsiParticipant[]>([]);
   const [isAudioMuted, setAudioMuted] = useState(true);
@@ -65,13 +66,21 @@ export function useJitsi({
     });
 
     setApi(jitsiApi);
-    
+    setApiReady(true);
+
     const updateParticipants = () => {
       if (!jitsiApi) return;
       const participantMap = new Map<string, JitsiParticipant>();
-      const jitsiParticipants = jitsiApi.getParticipantsInfo();
       
-      jitsiParticipants.forEach(p => {
+      const localParticipant = jitsiApi.getParticipantsInfo().find(p => p.local);
+      if(localParticipant) {
+        participantMap.set(localParticipant.id, {
+          ...localParticipant,
+          displayName: localParticipant.displayName || 'Me'
+        });
+      }
+
+      jitsiApi.getParticipantsInfo().forEach(p => {
         if (!participantMap.has(p.id)) {
             participantMap.set(p.id, {
                 ...p,
@@ -82,7 +91,7 @@ export function useJitsi({
       setParticipants(Array.from(participantMap.values()));
     }
 
-    jitsiApi.on('videoConferenceJoined', (data: {displayName: string}) => {
+    jitsiApi.on('videoConferenceJoined', () => {
       setIsJoined(true);
       jitsiApi.isAudioMuted().then(setAudioMuted);
       jitsiApi.isVideoMuted().then(setVideoMuted);
@@ -140,5 +149,5 @@ export function useJitsi({
     ]
   );
 
-  return { isJoined, api, participants, controls };
+  return { isApiReady, isJoined, api, participants, controls };
 }
