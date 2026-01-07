@@ -56,7 +56,7 @@ export function useJitsi({
         startWithAudioMuted: startWithAudioMuted,
         startWithVideoMuted: startWithVideoMuted,
         prejoinConfig: {
-            enabled: false,
+            enabled: false
         },
         disableDeepLinking: true,
         enableWelcomePage: false,
@@ -66,6 +66,9 @@ export function useJitsi({
         fileRecordingsEnabled: false,
       },
       interfaceConfigOverwrite: {
+        BRAND_WATERMARK_LINK: 'https://iglesia.unio.my',
+        DEFAULT_REMOTE_DISPLAY_NAME: 'Fellow Unio User',
+        JITSI_WATERMARK_LINK: 'https://iglesia.unio.my',
         TOOLBAR_BUTTONS: [],
         SETTINGS_SECTIONS: ['devices', 'language', 'profile', 'moderator'],
         SHOW_JITSI_WATERMARK: false,
@@ -86,18 +89,19 @@ export function useJitsi({
     
     const updateParticipants = () => {
         if (!jitsiApi) return;
-        
+
         const allParticipants = jitsiApi.getParticipantsInfo();
-        const localUser = allParticipants.find(p => p.local);
+        const localUserArray = allParticipants.filter(p => p.local);
         const remoteParticipants = allParticipants.filter(p => !p.local);
 
         const uniqueParticipants = new Map<string, JitsiParticipant>();
 
-        // Add local user first
-        if (localUser) {
+        // Add local user first, ensuring only one entry
+        if (localUserArray.length > 0) {
+            const localUser = localUserArray[0];
             uniqueParticipants.set(localUser.id, {
-            ...localUser,
-            displayName: jitsiApi.getDisplayName(localUser.id) || 'Me',
+                ...localUser,
+                displayName: jitsiApi.getDisplayName(localUser.id) || 'Me',
             });
         }
         
