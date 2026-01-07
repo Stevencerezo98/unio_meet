@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Video, ShieldCheck, Zap, Minimal, Lock } from 'lucide-react';
+import { Video, ShieldCheck, Zap, Lock, TvMinimal } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator';
@@ -180,7 +180,7 @@ export default function Home() {
             </motion.div>
             <motion.div variants={featureVariants} className="flex flex-col items-center p-6 border border-neutral-800 rounded-lg bg-white/5">
               <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary/10 text-primary mb-4">
-                <Minimal className="h-8 w-8" />
+                <TvMinimal className="h-8 w-8" />
               </div>
               <h3 className="text-xl font-semibold">Interfaz Minimalista</h3>
               <p className="mt-2 text-muted-foreground">
