@@ -6,16 +6,13 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { firebaseConfig } from './config';
 
 const apps = getApps();
-const SERVICE_ACCOUNT_KEY_PATH = 'serviceAccountKey.json'
 
-const app = apps.length
-  ? apps[0]
-  : initializeApp(
-      {
-        credential: credential.cert(SERVICE_ACCOUNT_KEY_PATH),
-      },
-      'server'
-    );
+// In a managed environment like App Hosting, the Admin SDK can be initialized
+// without any arguments. It will automatically discover the service account
+// credentials from the environment.
+const app = apps.length ? apps[0] : initializeApp({
+    // No credential needed here, it's auto-discovered.
+}, 'server');
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
