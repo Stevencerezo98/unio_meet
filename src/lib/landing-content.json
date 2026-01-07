@@ -1,0 +1,77 @@
+
+{
+  "hero": {
+    "title": "Reuniones privadas, sin fronteras",
+    "subtitle": "Videollamadas simples y seguras, alojadas en nuestra propia infraestructura para máxima privacidad. Sin registros, sin rastreo.",
+    "ctaPrimary": "Iniciar Reunión Instantánea",
+    "ctaSecondary": "Agendar para después",
+    "cardTitle": "Crear o unirse",
+    "cardDescription": "Inicia una reunión instantánea o únete con un nombre de sala."
+  },
+  "features": {
+    "title": "Por qué elegir Unio",
+    "subtitle": "Una plataforma diseñada para ser simple, segura y respetuosa con tu privacidad.",
+    "items": [
+      {
+        "icon": "Lock",
+        "title": "Seguridad Encriptada",
+        "description": "Todas las llamadas están protegidas con encriptación de extremo a extremo. Tu conversación es solo tuya."
+      },
+      {
+        "icon": "Zap",
+        "title": "Sin Instalación",
+        "description": "Únete a reuniones directamente desde tu navegador en cualquier dispositivo. Sin descargas, sin complicaciones."
+      },
+      {
+        "icon": "TvMinimal",
+        "title": "Interfaz Minimalista",
+        "description": "Una experiencia limpia y sin distracciones, centrada en lo que más importa: la comunicación."
+      }
+    ]
+  },
+  "footer": {
+    "brandName": "Unio",
+    "brandDescription": "Reuniones privadas, sin fronteras. Videollamadas simples y seguras.",
+    "socialLinks": [
+      { "name": "Facebook", "url": "#" },
+      { "name": "Instagram", "url": "#" },
+      { "name": "TikTok", "url": "#" },
+      { "name": "WhatsApp", "url": "#" }
+    ],
+    "linkColumns": [
+      {
+        "title": "Productos",
+        "links": [
+          { "text": "Reuniones", "url": "#" },
+          { "text": "Chat de Equipo", "url": "#" },
+          { "text": "Pizarra Virtual", "url": "#" },
+          { "text": "Eventos Virtuales", "url": "#" }
+        ]
+      },
+      {
+        "title": "Recursos",
+        "links": [
+          { "text": "Blog", "url": "#" },
+          { "text": "Centro de Soporte", "url": "#" },
+          { "text": "Tutoriales en Video", "url": "#" },
+          { "text": "Descargar la App", "url": "#" }
+        ]
+      },
+      {
+        "title": "Empresa",
+        "links": [
+          { "text": "Sobre Nosotros", "url": "#" },
+          { "text": "Contactar a Ventas", "url": "#" },
+          { "text": "Carreras", "url": "#" },
+          { "text": "Prensa", "url": "#" },
+          { "text": "Legal", "url": "#" }
+        ]
+      }
+    ],
+    "legalLinks": [
+      { "text": "Términos de Servicio", "url": "#" },
+      { "text": "Política de Privacidad", "url": "#" }
+    ],
+    "copyright": "© {year} Unio, Inc. Todos los derechos reservados."
+  }
+}
