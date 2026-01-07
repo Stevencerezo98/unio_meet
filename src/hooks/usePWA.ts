@@ -1,8 +1,9 @@
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useContext, createContext } from 'react';
 
-interface BeforeInstallPromptEvent extends Event {
+export interface BeforeInstallPromptEvent extends Event {
   readonly platforms: Array<string>;
   readonly userChoice: Promise<{
     outcome: 'accepted' | 'dismissed';
@@ -11,37 +12,17 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
 }
 
+export interface PWAContextType {
+  canInstall: boolean;
+  install: () => Promise<void>;
+}
+
+export const PWAContext = createContext<PWAContextType | null>(null);
+
 export function usePWA() {
-  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isStandalone, setIsStandalone] = useState(false);
-
-  useEffect(() => {
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setInstallPrompt(e as BeforeInstallPromptEvent);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setIsStandalone(true);
-    }
-    
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
-  }, []);
-
-  const install = async () => {
-    if (!installPrompt) {
-      return;
-    }
-    await installPrompt.prompt();
-    const { outcome } = await installPrompt.userChoice;
-    if (outcome === 'accepted') {
-      setInstallPrompt(null);
-    }
-  };
-
-  return { installPrompt, canInstall: !!installPrompt && !isStandalone, install };
+  const context = useContext(PWAContext);
+  if (!context) {
+    throw new Error('usePWA must be used within a PWAProvider');
+  }
+  return context;
 }

@@ -6,20 +6,19 @@ import Image from 'next/image';
 import { Video, Facebook, Instagram } from 'lucide-react';
 import type { FooterContent } from '@/lib/landing-content';
 import { usePWA } from '@/hooks/usePWA';
+import { Button } from './ui/button';
 
 const FooterLink = ({ href, children }: { href: string; children: React.ReactNode }) => {
   const { canInstall, install } = usePWA();
 
-  const handleClick = (e: React.MouseEvent) => {
-    if (canInstall) {
-      e.preventDefault();
-      install();
-    }
+  const handleInstallClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    install();
   };
 
   if (href === '#install-pwa') {
     return (
-       <button onClick={handleClick} className="text-sm text-muted-foreground transition-colors hover:text-foreground text-left disabled:opacity-50 disabled:cursor-not-allowed" disabled={!canInstall}>
+       <button onClick={handleInstallClick} className="text-sm text-muted-foreground transition-colors hover:text-foreground text-left disabled:opacity-50 disabled:cursor-not-allowed" disabled={!canInstall}>
         {children}
       </button>
     )
