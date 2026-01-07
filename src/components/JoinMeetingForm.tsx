@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Video } from 'lucide-react';
-import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator';
+import { generateRandomRoomName } from '@/app/actions';
+
 
 export default function JoinMeetingForm() {
   const [roomName, setRoomName] = useState('');
@@ -16,22 +17,17 @@ export default function JoinMeetingForm() {
   const handleJoinSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (roomName) {
-      router.push(`/meeting/${encodeURIComponent(roomName)}`);
+      router.push(`/lobby/${encodeURIComponent(roomName)}`);
     }
   };
 
-  const handleInstantMeeting = () => {
-    const generatedRoomName = uniqueNamesGenerator({
-      dictionaries: [adjectives, colors, animals],
-      separator: '-',
-      length: 3,
-    });
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    router.push(`/meeting/${encodeURIComponent(`${generatedRoomName}-${randomSuffix}`)}`);
+  const handleInstantMeeting = async () => {
+    const generatedRoomName = await generateRandomRoomName();
+    router.push(`/lobby/${encodeURIComponent(generatedRoomName)}`);
   };
 
   return (
-    <Card className="w-full max-w-md shadow-2xl border-neutral-800 bg-white/5 backdrop-blur-xl">
+    <Card className="w-full max-w-md shadow-2xl border-border bg-card/60 backdrop-blur-xl">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-2xl">
           <Video className="h-6 w-6 text-primary" />

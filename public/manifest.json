@@ -2,7 +2,7 @@
   "name": "Unio Premium Video",
   "short_name": "Unio",
   "description": "Plataforma de videollamadas privadas de alta calidad.",
-  "start_url": "/",
+  "start_url": "/start",
   "display": "standalone",
   "background_color": "#0a0a0a",
   "theme_color": "#0a0a0a",
