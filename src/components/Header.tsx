@@ -66,7 +66,9 @@ export default function Header() {
         </nav>
 
         <div className="hidden md:flex items-center gap-2">
-          <Button variant="ghost">Iniciar Sesión</Button>
+          <Button variant="ghost" asChild>
+            <Link href="/login">Iniciar Sesión</Link>
+          </Button>
           <Button>Crear Cuenta Gratis</Button>
         </div>
       </div>

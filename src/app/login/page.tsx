@@ -58,7 +58,7 @@ export default function LoginPage() {
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Steven98"
+                placeholder="nombre de usuario"
                 required
               />
             </div>
