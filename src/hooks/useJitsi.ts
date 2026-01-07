@@ -89,14 +89,16 @@ export function useJitsi({
         if (!jitsiApi) return;
         const newParticipantsMap = new Map<string, JitsiParticipant>();
 
-        const localInfo = jitsiApi.getParticipantsInfo().find(p => p.local);
-        if (localInfo) {
-            newParticipantsMap.set(localInfo.id, {
-                ...localInfo,
-                displayName: jitsiApi.getDisplayName(localInfo.id) || 'Me',
+        // Get local participant first
+        const localParticipantInfo = jitsiApi.getParticipantsInfo().find(p => p.local);
+        if (localParticipantInfo) {
+            newParticipantsMap.set(localParticipantInfo.id, {
+                ...localParticipantInfo,
+                displayName: jitsiApi.getDisplayName(localParticipantInfo.id) || 'Me',
             });
         }
         
+        // Add other non-local participants
         jitsiApi.getParticipantsInfo().forEach(p => {
             if (!p.local && !newParticipantsMap.has(p.id)) {
                  newParticipantsMap.set(p.id, {
@@ -138,7 +140,7 @@ export function useJitsi({
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parentNode, roomName, domain, displayName, startWithAudioMuted, startWithVideoMuted]);
+  }, [parentNode, roomName, domain, startWithAudioMuted, startWithVideoMuted]);
   
   const toggleAudio = useCallback(() => api?.executeCommand('toggleAudio'), [api]);
   const toggleVideo = useCallback(() => api?.executeCommand('toggleVideo'), [api]);
