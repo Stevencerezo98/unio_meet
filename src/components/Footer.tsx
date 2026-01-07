@@ -11,10 +11,25 @@ const FooterLink = ({ href, children }: { href: string; children: React.ReactNod
 
 export default function Footer() {
   return (
-    <footer className="border-t border-border">
+    <footer className="border-t border-border bg-background/50">
       <div className="container mx-auto py-12 px-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           
+          <div className="space-y-3 col-span-2 md:col-span-1">
+             <div className="flex items-center gap-2">
+                <Video className="h-6 w-6 text-primary" />
+                <span className="text-lg font-bold">Unio</span>
+             </div>
+            <p className="text-muted-foreground text-sm">
+              Reuniones privadas, sin fronteras. Videollamadas simples y seguras.
+            </p>
+            <div className="flex items-center gap-4 pt-2">
+              <Link href="#" className="text-muted-foreground hover:text-foreground"><Twitter className="h-5 w-5"/></Link>
+              <Link href="#" className="text-muted-foreground hover:text-foreground"><Linkedin className="h-5 w-5"/></Link>
+              <Link href="#" className="text-muted-foreground hover:text-foreground"><Facebook className="h-5 w-5"/></Link>
+          </div>
+          </div>
+
           <div className="space-y-3">
             <h4 className="font-semibold text-foreground">Productos</h4>
             <div className="flex flex-col space-y-2">
@@ -42,32 +57,18 @@ export default function Footer() {
               <FooterLink href="#">Contactar a Ventas</FooterLink>
               <FooterLink href="#">Carreras</FooterLink>
               <FooterLink href="#">Prensa</FooterLink>
+              <FooterLink href="#">Legal</FooterLink>
             </div>
           </div>
-
-          <div className="space-y-3">
-            <h4 className="font-semibold text-foreground">Legal</h4>
-            <div className="flex flex-col space-y-2">
-              <FooterLink href="#">Términos de Servicio</FooterLink>
-              <FooterLink href="#">Política de Privacidad</FooterLink>
-              <FooterLink href="#">Uso Aceptable</FooterLink>
-            </div>
-          </div>
-
         </div>
 
-        <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Video className="h-6 w-6 text-primary" />
-            <span className="text-lg font-bold">Unio</span>
-          </div>
-          <p className="text-sm text-muted-foreground mt-4 md:mt-0">
+        <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between">
+          <p className="text-sm text-muted-foreground text-center sm:text-left">
             © {new Date().getFullYear()} Unio, Inc. Todos los derechos reservados.
           </p>
-          <div className="flex items-center gap-4 mt-4 md:mt-0">
-              <Link href="#" className="text-muted-foreground hover:text-foreground"><Twitter className="h-5 w-5"/></Link>
-              <Link href="#" className="text-muted-foreground hover:text-foreground"><Linkedin className="h-5 w-5"/></Link>
-              <Link href="#" className="text-muted-foreground hover:text-foreground"><Facebook className="h-5 w-5"/></Link>
+          <div className="flex gap-4 mt-4 sm:mt-0">
+            <FooterLink href="#">Términos de Servicio</FooterLink>
+            <FooterLink href="#">Política de Privacidad</FooterLink>
           </div>
         </div>
 

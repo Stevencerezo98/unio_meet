@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Video } from 'lucide-react';
+import { Video, ShieldCheck, Zap, Minimal, Lock } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator';
 
 export default function Home() {
   const [roomName, setRoomName] = useState('');
@@ -23,9 +24,25 @@ export default function Home() {
   };
 
   const handleInstantMeeting = () => {
-    const generatedRoomName = Math.floor(Math.random() * 10000000000).toString().padStart(10, '0');
-    router.push(`/meeting/${encodeURIComponent(generatedRoomName)}`);
+    const generatedRoomName = uniqueNamesGenerator({
+      dictionaries: [adjectives, colors, animals],
+      separator: '-',
+      length: 3,
+    });
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    router.push(`/meeting/${encodeURIComponent(`${generatedRoomName}-${randomSuffix}`)}`);
   };
+  
+  const handleScheduleMeeting = () => {
+    // Placeholder for scheduling functionality
+    alert('La función para agendar reuniones estará disponible próximamente.');
+  };
+
+  const featureVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+  };
+
 
   return (
     <div className="relative flex flex-col min-h-screen w-full bg-background text-foreground">
@@ -36,7 +53,7 @@ export default function Home() {
         <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-accent/10 rounded-full filter blur-[150px] opacity-60 animate-pulse animation-delay-2000" />
       </div>
 
-      <main className="container mx-auto flex flex-grow flex-col items-center justify-center p-4">
+      <main className="container mx-auto flex flex-grow flex-col items-center justify-center p-4 pt-32 pb-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -81,26 +98,25 @@ export default function Home() {
                   Crear o unirse
                 </CardTitle>
                 <CardDescription>
-                  Introduce un nombre de sala o inicia una reunión instantánea.
+                  Inicia una reunión instantánea o únete con un nombre de sala.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <form onSubmit={handleJoinMeeting} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="roomName">Nombre de la Sala</Label>
-                    <Input
-                      id="roomName"
-                      type="text"
-                      placeholder="ej: reunion-semanal"
-                      value={roomName}
-                      onChange={(e) => setRoomName(e.target.value)}
-                      className="h-12 text-base"
-                    />
-                  </div>
-                  <Button type="submit" size="lg" className="w-full h-12 text-base" disabled={!roomName}>
-                    Unirse a la Reunión
-                  </Button>
-                </form>
+              <CardContent className="flex flex-col gap-4">
+                 <Button
+                  size="lg"
+                  className="w-full h-12 text-base"
+                  onClick={handleInstantMeeting}
+                >
+                  Iniciar Reunión Instantánea
+                </Button>
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  className="w-full h-12 text-base"
+                  onClick={handleScheduleMeeting}
+                >
+                  Agendar para después
+                </Button>
                 
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
@@ -108,23 +124,71 @@ export default function Home() {
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
                     <span className="bg-card px-2 text-muted-foreground">
-                      O
+                      O introduce un nombre de sala
                     </span>
                   </div>
                 </div>
 
-                <Button
-                  size="lg"
-                  variant="secondary"
-                  className="w-full h-12 text-base"
-                  onClick={handleInstantMeeting}
-                >
-                  Iniciar Reunión Instantánea
-                </Button>
+                <form onSubmit={handleJoinMeeting} className="flex gap-2">
+                    <Input
+                      id="roomName"
+                      type="text"
+                      placeholder="ej: reunion-semanal"
+                      value={roomName}
+                      onChange={(e) => setRoomName(e.target.value)}
+                      className="h-12 text-base flex-grow"
+                    />
+                  <Button type="submit" size="lg" className="h-12 text-base" disabled={!roomName}>
+                    Unirse
+                  </Button>
+                </form>
               </CardContent>
             </Card>
           </motion.div>
         </motion.div>
+
+        {/* Social Proof Section */}
+        <motion.section 
+          className="mt-32 w-full max-w-5xl text-center"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ staggerChildren: 0.2 }}
+        >
+          <h2 className="text-4xl font-bold">Por qué elegir Unio</h2>
+          <p className="mt-4 text-lg text-muted-foreground">
+            Una plataforma diseñada para ser simple, segura y respetuosa con tu privacidad.
+          </p>
+          <div className="mt-12 grid md:grid-cols-3 gap-8">
+            <motion.div variants={featureVariants} className="flex flex-col items-center p-6 border border-neutral-800 rounded-lg bg-white/5">
+              <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary/10 text-primary mb-4">
+                <Lock className="h-8 w-8" />
+              </div>
+              <h3 className="text-xl font-semibold">Seguridad Encriptada</h3>
+              <p className="mt-2 text-muted-foreground">
+                Todas las llamadas están protegidas con encriptación de extremo a extremo. Tu conversación es solo tuya.
+              </p>
+            </motion.div>
+            <motion.div variants={featureVariants} className="flex flex-col items-center p-6 border border-neutral-800 rounded-lg bg-white/5">
+              <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary/10 text-primary mb-4">
+                <Zap className="h-8 w-8" />
+              </div>
+              <h3 className="text-xl font-semibold">Sin Instalación</h3>
+              <p className="mt-2 text-muted-foreground">
+                Únete a reuniones directamente desde tu navegador en cualquier dispositivo. Sin descargas, sin complicaciones.
+              </p>
+            </motion.div>
+            <motion.div variants={featureVariants} className="flex flex-col items-center p-6 border border-neutral-800 rounded-lg bg-white/5">
+              <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary/10 text-primary mb-4">
+                <Minimal className="h-8 w-8" />
+              </div>
+              <h3 className="text-xl font-semibold">Interfaz Minimalista</h3>
+              <p className="mt-2 text-muted-foreground">
+                Una experiencia limpia y sin distracciones, centrada en lo que más importa: la comunicación.
+              </p>
+            </motion.div>
+          </div>
+        </motion.section>
       </main>
       <Footer />
     </div>
