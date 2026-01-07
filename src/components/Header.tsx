@@ -1,8 +1,7 @@
-
 'use client';
 
 import Link from 'next/link';
-import { Video, ChevronDown } from 'lucide-react';
+import { Video } from 'lucide-react';
 import { Button } from './ui/button';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
@@ -15,6 +14,8 @@ import {
 import type { HeaderContent, NavItem as NavItemType } from '@/lib/landing-content';
 import { ThemeToggle } from './ThemeToggle';
 import { usePWA } from '@/hooks/usePWA';
+import { useUser } from '@/firebase';
+import UserProfile from './UserProfile';
 
 const NavItem = ({ item }: { item: NavItemType }) => {
   const { canInstall, install } = usePWA();
@@ -71,6 +72,9 @@ const NavItem = ({ item }: { item: NavItemType }) => {
 };
 
 export default function Header({ content }: { content: HeaderContent | null }) {
+  const { user, isUserLoading } = useUser();
+  const isRegisteredUser = user && !user.isAnonymous;
+
   if (!content) {
     return (
       <header className="absolute top-0 left-0 right-0 z-50">
@@ -109,14 +113,22 @@ export default function Header({ content }: { content: HeaderContent | null }) {
           ))}
         </nav>
 
-        <div className="hidden md:flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <ThemeToggle />
-          <Button variant="ghost" asChild>
-            <Link href={content.ctaSecondary.url}>{content.ctaSecondary.text}</Link>
-          </Button>
-          <Button asChild>
-            <Link href={content.ctaPrimary.url}>{content.ctaPrimary.text}</Link>
-          </Button>
+          {isUserLoading ? (
+             <div className="h-10 w-24 rounded-md animate-pulse bg-muted" />
+          ) : isRegisteredUser ? (
+            <UserProfile />
+          ) : (
+            <>
+              <Button variant="ghost" asChild>
+                <Link href={content.ctaSecondary.url}>{content.ctaSecondary.text}</Link>
+              </Button>
+              <Button asChild>
+                <Link href={content.ctaPrimary.url}>{content.ctaPrimary.text}</Link>
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </motion.header>

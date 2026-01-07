@@ -1,23 +1,23 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import JoinMeetingForm from '@/components/JoinMeetingForm';
-import { Video, Settings, Clock, Trash } from 'lucide-react';
+import { Video, Clock, Trash } from 'lucide-react';
 import Link from 'next/link';
 import SplashScreen from '@/components/SplashScreen';
 import { usePWA } from '@/hooks/usePWA';
 import { Button } from '@/components/ui/button';
 import { useFirebase, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, limit, deleteDoc, doc } from 'firebase/firestore';
+import { collection, query, orderBy, limit, doc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import UserProfile from '@/components/UserProfile';
+
 
 function StartHeader() {
-  const router = useRouter();
   const { user, isUserLoading } = useUser();
   const isRegisteredUser = user && !user.isAnonymous;
 
@@ -28,23 +28,19 @@ function StartHeader() {
         <span className="text-2xl font-bold">Unio</span>
       </Link>
       
-      {!isUserLoading && (
-        <div className="flex items-center gap-2">
-            {isRegisteredUser ? (
-                 <Button variant="ghost" size="icon" onClick={() => router.push('/settings')}>
-                    <Settings className="h-6 w-6" />
-                </Button>
-            ) : (
-                <>
-                    <Button variant="ghost" asChild>
-                        <Link href="/login">Iniciar Sesión</Link>
-                    </Button>
-                    <Button asChild>
-                        <Link href="/register">Crear Cuenta</Link>
-                    </Button>
-                </>
-            )}
-        </div>
+      {isUserLoading ? (
+         <div className="h-10 w-24 rounded-md animate-pulse bg-muted" />
+      ) : isRegisteredUser ? (
+        <UserProfile />
+      ) : (
+          <div className="flex items-center gap-2">
+              <Button variant="ghost" asChild>
+                  <Link href="/login">Iniciar Sesión</Link>
+              </Button>
+              <Button asChild>
+                  <Link href="/register">Crear Cuenta</Link>
+              </Button>
+          </div>
       )}
     </header>
   );
