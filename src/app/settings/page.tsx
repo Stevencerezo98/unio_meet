@@ -3,19 +3,54 @@
 
 import { useState, useRef, useEffect, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Pencil } from 'lucide-react';
+import { ArrowLeft, Pencil, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { useUserSettings } from '@/hooks/use-user-settings';
+import { useFirebase, useUser, useDoc, useMemoFirebase } from '@/firebase';
+import { doc, getFirestore } from 'firebase/firestore';
+import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { signOut } from 'firebase/auth';
+
+function SettingsHeader() {
+  const router = useRouter();
+  const { auth } = useFirebase();
+
+  const handleLogout = async () => {
+    if (auth) {
+      await signOut(auth);
+      router.push('/login');
+    }
+  };
+
+  return (
+    <header className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center">
+      <Button variant="ghost" size="icon" onClick={() => router.back()}>
+        <ArrowLeft className="h-6 w-6" />
+      </Button>
+      <Button variant="ghost" onClick={handleLogout}>
+        <LogOut className="mr-2 h-4 w-4" />
+        Cerrar Sesión
+      </Button>
+    </header>
+  );
+}
 
 export default function SettingsPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [settings, saveSettings] = useUserSettings();
+  const { firestore } = useFirebase();
+  const { user, isUserLoading } = useUser();
+
+  const userDocRef = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return doc(firestore, 'users', user.uid);
+  }, [firestore, user]);
+
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc(userDocRef);
   
   const [displayName, setDisplayName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -23,11 +58,11 @@ export default function SettingsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (settings) {
-      setDisplayName(settings.name || '');
-      setAvatarUrl(settings.avatar || null);
+    if (userProfile) {
+      setDisplayName(userProfile.displayName || '');
+      setAvatarUrl(userProfile.profilePictureUrl || null);
     }
-  }, [settings]);
+  }, [userProfile]);
 
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -41,27 +76,43 @@ export default function SettingsPage() {
   };
 
   const handleSave = () => {
-    saveSettings({ name: displayName, avatar: avatarUrl || '' });
+    if (!userDocRef) {
+        toast({ title: "Error", description: "No se puede guardar el perfil.", variant: "destructive" });
+        return;
+    }
+    
+    const updatedData = {
+        displayName: displayName,
+        profilePictureUrl: avatarUrl || '',
+    };
+
+    updateDocumentNonBlocking(userDocRef, updatedData);
+
     toast({
-      title: 'Settings Saved!',
-      description: 'Your default name and avatar have been updated.',
+      title: '¡Ajustes Guardados!',
+      description: 'Tu nombre y avatar han sido actualizados.',
     });
     router.push('/start');
   };
 
+  if (isUserLoading || isProfileLoading) {
+    return <div className="flex min-h-screen items-center justify-center">Cargando perfil...</div>;
+  }
+
+  if (!user) {
+      router.replace('/login');
+      return null;
+  }
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-      <header className="absolute top-0 left-0 right-0 p-4">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-6 w-6" />
-        </Button>
-      </header>
+      <SettingsHeader />
 
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Your Profile</CardTitle>
+          <CardTitle>Tu Perfil</CardTitle>
           <CardDescription>
-            Set your default name and avatar for meetings.
+            Configura tu nombre y avatar para las reuniones.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -90,20 +141,21 @@ export default function SettingsPage() {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="displayName" className="text-base">Default Name</Label>
+            <Label htmlFor="displayName" className="text-base">Tu Nombre</Label>
             <Input
               id="displayName"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               className="h-12 text-lg"
-              placeholder="Enter your name"
+              placeholder="Introduce tu nombre"
             />
           </div>
-
-          <Button onClick={handleSave} size="lg" className="w-full">
-            Save Settings
-          </Button>
         </CardContent>
+        <CardFooter>
+           <Button onClick={handleSave} size="lg" className="w-full">
+            Guardar Ajustes
+          </Button>
+        </CardFooter>
       </Card>
     </div>
   );

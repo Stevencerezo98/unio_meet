@@ -11,6 +11,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { Video } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { getFirestore, doc } from 'firebase/firestore';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { useFirebase } from '@/firebase';
 
 function RegisterHeader() {
     return (
@@ -38,18 +42,53 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { auth, firestore } = useFirebase();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!auth || !firestore) {
+        toast({ title: 'Error', description: 'Servicios de Firebase no disponibles.', variant: 'destructive' });
+        return;
+    }
     setIsLoading(true);
     
-    // Placeholder for registration logic
-    toast({
-      title: 'Función no implementada',
-      description: 'El registro de usuarios se añadirá en una futura versión.',
-    });
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-    setIsLoading(false);
+      const userProfile = {
+        id: user.uid,
+        displayName: username,
+        email: user.email,
+        profilePictureUrl: '', // Default empty avatar
+      };
+
+      // Store user profile in Firestore
+      const userDocRef = doc(firestore, 'users', user.uid);
+      setDocumentNonBlocking(userDocRef, userProfile, { merge: true });
+
+      toast({
+        title: '¡Cuenta Creada!',
+        description: 'Tu cuenta ha sido creada exitosamente.',
+      });
+      router.push('/start');
+
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      let errorMessage = 'Ocurrió un error al registrarse.';
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'Este correo electrónico ya está en uso.';
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = 'La contraseña debe tener al menos 6 caracteres.';
+      }
+      toast({
+        variant: 'destructive',
+        title: 'Error de Registro',
+        description: errorMessage,
+      });
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   return (
@@ -102,4 +141,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-

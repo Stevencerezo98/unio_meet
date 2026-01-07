@@ -9,10 +9,10 @@ import Link from 'next/link';
 import SplashScreen from '@/components/SplashScreen';
 import { usePWA } from '@/hooks/usePWA';
 import { Button } from '@/components/ui/button';
+import { useUser } from '@/firebase';
 
 function StartHeader() {
   const router = useRouter();
-  // Always link to /start from the start page header.
   const headerLink = '/start';
 
   return (
@@ -31,9 +31,16 @@ function StartHeader() {
 export default function StartPage() {
   const [showSplash, setShowSplash] = useState(true);
   const { isStandalone } = usePWA();
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
 
   useEffect(() => {
-    // Only show splash screen on first load in an installed app session
+    if (!isUserLoading && !user) {
+        router.replace('/login');
+    }
+  }, [user, isUserLoading, router]);
+
+  useEffect(() => {
     if (isStandalone) {
       if (sessionStorage.getItem('splashShown')) {
         setShowSplash(false);
@@ -48,6 +55,10 @@ export default function StartPage() {
         setShowSplash(false);
     }
   }, [isStandalone]);
+  
+  if (isUserLoading || !user) {
+    return <SplashScreen />;
+  }
 
   if (showSplash) {
     return <SplashScreen />;

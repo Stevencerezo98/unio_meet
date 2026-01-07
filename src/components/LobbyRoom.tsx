@@ -8,16 +8,27 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useUserSettings } from '@/hooks/use-user-settings';
+import { useFirebase, useUser, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+
 
 export default function LobbyRoom() {
-  const [settings, saveSettings] = useUserSettings();
+  const { firestore } = useFirebase();
+  const { user } = useUser();
+  
+  const userDocRef = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return doc(firestore, 'users', user.uid);
+  }, [firestore, user]);
+
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc(userDocRef);
+
   const [displayName, setDisplayName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
   const [isAudioMuted, setAudioMuted] = useState(true);
   const [isVideoMuted, setVideoMuted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -30,25 +41,19 @@ export default function LobbyRoom() {
 
   const router = useRouter();
   const params = useParams();
-  const { toast } = useToast();
 
   const roomName = decodeURIComponent(params.roomName as string);
 
   useEffect(() => {
-    if (settings.name) {
-      setDisplayName(settings.name);
-    } else {
-      // Generate a random name only if no name is set
-      setDisplayName(uniqueNamesGenerator({
-          dictionaries: [adjectives, colors, animals],
-          separator: ' ',
-          style: 'capital',
-      }));
+    if (userProfile) {
+      setDisplayName(userProfile.displayName || '');
+      setAvatarUrl(userProfile.profilePictureUrl || null);
+    } else if (!isProfileLoading && user) {
+      // Fallback if profile doesn't exist for some reason
+      setDisplayName(user.displayName || 'Usuario');
     }
-    if (settings.avatar) {
-      setAvatarUrl(settings.avatar);
-    }
-  }, [settings]);
+  }, [userProfile, isProfileLoading, user]);
+
 
   const getMediaPermissions = useCallback(async () => {
     try {
@@ -83,7 +88,6 @@ export default function LobbyRoom() {
     getMediaPermissions();
 
     return () => {
-      // Stop media tracks when component unmounts
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
       }
@@ -92,8 +96,12 @@ export default function LobbyRoom() {
 
 
   const handleJoinMeeting = () => {
-    // Save current settings before joining
-    saveSettings({ name: displayName, avatar: avatarUrl || '' });
+    if (userDocRef) {
+        updateDocumentNonBlocking(userDocRef, { 
+            displayName: displayName,
+            profilePictureUrl: avatarUrl || ''
+        });
+    }
     
     if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
@@ -138,7 +146,7 @@ export default function LobbyRoom() {
   };
 
   const VideoPreview = () => {
-    if (isLoading) {
+    if (isLoading || isProfileLoading) {
       return (
         <div className="absolute inset-0 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin" />
@@ -184,7 +192,7 @@ export default function LobbyRoom() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <Card className="w-full max-w-4xl">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Joining: {roomName}</CardTitle>
+          <CardTitle className="text-2xl text-center">Entrando a: {roomName}</CardTitle>
         </CardHeader>
         <CardContent className="grid md:grid-cols-2 gap-8 items-center">
           <div className="relative aspect-video rounded-lg bg-muted overflow-hidden border">
@@ -201,7 +209,7 @@ export default function LobbyRoom() {
           </div>
           <div className="space-y-6">
             <div className="space-y-4">
-                <Label htmlFor="displayName" className="text-lg">Your Name & Avatar</Label>
+                <Label htmlFor="displayName" className="text-lg">Tu Nombre y Avatar</Label>
                 <div className="flex items-center gap-4">
                     <div className="relative">
                         <Avatar className="h-16 w-16 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
@@ -226,12 +234,12 @@ export default function LobbyRoom() {
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
                         className="h-12 text-lg"
-                        placeholder="Enter your name"
+                        placeholder="Introduce tu nombre"
                     />
                 </div>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">This name and avatar will be displayed to others in the meeting.</p>
+              <p className="text-sm text-muted-foreground">Este nombre y avatar se mostrarán a los demás en la reunión.</p>
             </div>
           </div>
         </CardContent>
@@ -240,9 +248,9 @@ export default function LobbyRoom() {
               size="lg"
               className="w-full h-14 text-xl"
               onClick={handleJoinMeeting}
-              disabled={!displayName}
+              disabled={!displayName || isProfileLoading || isLoading}
             >
-              {isLoading ? 'Loading Devices...' : 'Join Meeting'}
+              {isProfileLoading || isLoading ? 'Cargando...' : 'Unirse a la Reunión'}
             </Button>
         </CardFooter>
       </Card>

@@ -1,17 +1,18 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { login } from '../actions';
 import { useToast } from '@/hooks/use-toast';
 import { Video } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useFirebase } from '@/firebase';
 
 function LoginHeader() {
     return (
@@ -36,59 +37,71 @@ function LoginHeader() {
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { auth, user, isUserLoading } = useFirebase();
+
+  useEffect(() => {
+    if (!isUserLoading && user) {
+        router.replace('/start');
+    }
+  }, [user, isUserLoading, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!auth) {
+        toast({ title: 'Error', description: 'Servicios de Firebase no disponibles.', variant: 'destructive' });
+        return;
+    }
     setIsLoading(true);
 
     try {
-      const result = await login({ username, password });
-      if (result.success) {
-        toast({ title: 'Login successful!', description: 'Redirecting to dashboard...' });
-        router.refresh();
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Login failed',
-          description: result.error,
-        });
-      }
-    } catch (error) {
+      await signInWithEmailAndPassword(auth, email, password);
+      toast({ title: '¡Has iniciado sesión!', description: 'Redirigiendo...' });
+      router.push('/start');
+    } catch (error: any) {
+        let errorMessage = 'Por favor, comprueba tu email y contraseña.';
+        if(error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+            errorMessage = 'El email o la contraseña son incorrectos.';
+        }
       toast({
         variant: 'destructive',
-        title: 'An error occurred',
-        description: 'Please try again later.',
+        title: 'Error al iniciar sesión',
+        description: errorMessage,
       });
     } finally {
       setIsLoading(false);
     }
   };
 
+  if (isUserLoading || user) {
+      return <div className="flex min-h-screen items-center justify-center">Cargando...</div>;
+  }
+
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <LoginHeader />
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Admin Login</CardTitle>
-          <CardDescription>Enter your credentials to access the dashboard.</CardDescription>
+          <CardTitle>Iniciar Sesión</CardTitle>
+          <CardDescription>Introduce tus credenciales para acceder a tu cuenta.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="nombre de usuario"
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="tu@email.com"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Contraseña</Label>
               <Input
                 id="password"
                 type="password"
@@ -98,7 +111,7 @@ export default function LoginPage() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Logging in...' : 'Login'}
+              {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
             </Button>
           </form>
         </CardContent>

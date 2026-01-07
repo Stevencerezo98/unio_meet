@@ -3,8 +3,22 @@
 
 import LobbyRoom from '@/components/LobbyRoom';
 import { Suspense } from 'react';
+import { useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
 
 function LobbyPage() {
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+
+  if (isUserLoading) {
+      return <div>Loading...</div>
+  }
+  
+  if (!user) {
+      router.replace('/login');
+      return null;
+  }
+
   return <LobbyRoom />;
 }
 
