@@ -11,7 +11,7 @@ function LobbyPage() {
   const router = useRouter();
 
   if (isUserLoading) {
-      return <div>Loading...</div>
+      return <div className="flex min-h-screen items-center justify-center">Cargando...</div>
   }
   
   if (!user) {

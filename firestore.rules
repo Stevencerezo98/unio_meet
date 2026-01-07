@@ -1,29 +1,25 @@
+
 /**
  * This ruleset enforces a strict user-ownership model for the Unio Premium video platform.
  * The core philosophy is that users have complete control over their own data and the
  * resources they create, ensuring a high degree of privacy and security by default.
  *
  * Data Structure:
- * The data is organized into two separate top-level collections:
+ * The data is organized into top-level collections and subcollections:
  * - /users/{userId}: Stores individual user profile data.
+ *   - /users/{userId}/meetingHistory/{historyId}: Stores meeting history for a user.
  * - /meetingRooms/{meetingRoomId}: Stores configurations for video meeting rooms.
  * This separation (Structural Segregation) simplifies rules and improves query performance.
  *
  * Key Security Decisions:
- * - User Isolation: A user can only access their own document within the `/users` collection.
- *   Listing or reading other user profiles is explicitly disallowed to prevent data scraping.
+ * - User Isolation: A user can only access their own document within the `/users` collection
+ *   and its subcollections. Listing or reading other user profiles is explicitly disallowed.
  * - Ownership-Based Access: All meeting rooms have a denormalized `ownerId` field. All
- *   permissions (read, write, delete) for a meeting room are granted exclusively to the
- *   user identified in this field.
+ *   permissions for a meeting room are granted exclusively to the user in this field.
  * - Secure Listing: Listing meeting rooms is only permitted if the query is explicitly
- *   filtered to show only the rooms owned by the currently authenticated user. This prevents
- *   any user from listing all rooms in the system.
+ *   filtered to show only rooms owned by the currently authenticated user.
+ * - Subcollection Security: A user can only read/write/delete their own meeting history.
  * - Default Deny: Any operation not explicitly permitted is denied.
- *
- * Denormalization for Authorization:
- * To ensure fast and simple authorization, the `ownerId` is stored directly on each
- * `MeetingRoom` document. This avoids slow and costly `get()` calls to other documents
- * to verify ownership, making the rules more performant and easier to maintain.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -97,18 +93,24 @@ service cloud.firestore {
     // ----------------------------------------------------------------------
 
     /**
-     * @description Manages user profile documents.
-     * @path /users/{userId}
-     * @allow (create) An authenticated user creating their own user profile document.
-     * @deny (get) A user trying to read another user's profile.
-     * @principle Restricts access to a user's own data tree.
+     * @description Manages user documents and their subcollections.
      */
     match /users/{userId} {
       allow get: if isOwner(userId);
-      allow list: if false;
+      allow list: if false; // Users cannot list other user profiles
       allow create: if isOwner(userId) && hasValidUserProfileDataOnCreate(userId);
       allow update: if isExistingOwner(userId) && userProfileIsImmutable();
       allow delete: if isExistingOwner(userId);
+
+      /**
+       * @description Manages a user's personal meeting history.
+       * @path /users/{userId}/meetingHistory/{historyId}
+       * @allow (read, write, delete) The owner of the parent user document.
+       * @deny Anyone else.
+       */
+      match /meetingHistory/{historyId} {
+        allow read, write, delete: if isOwner(userId);
+      }
     }
 
     /**

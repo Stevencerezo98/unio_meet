@@ -11,8 +11,8 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useFirebase, useUser, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
-import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { doc, collection, serverTimestamp } from 'firebase/firestore';
+import { updateDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 
 export default function LobbyRoom() {
@@ -49,7 +49,6 @@ export default function LobbyRoom() {
       setDisplayName(userProfile.displayName || '');
       setAvatarUrl(userProfile.profilePictureUrl || null);
     } else if (!isProfileLoading && user) {
-      // Fallback if profile doesn't exist for some reason
       setDisplayName(user.displayName || 'Usuario');
     }
   }, [userProfile, isProfileLoading, user]);
@@ -65,7 +64,6 @@ export default function LobbyRoom() {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
-      // Mute audio by default on preview
       stream.getAudioTracks().forEach((track) => (track.enabled = !isAudioMuted));
       setHasPermissions(true);
       setMediaError(null);
@@ -96,16 +94,29 @@ export default function LobbyRoom() {
 
 
   const handleJoinMeeting = () => {
+    // 1. Update user profile
     if (userDocRef) {
         updateDocumentNonBlocking(userDocRef, { 
             displayName: displayName,
             profilePictureUrl: avatarUrl || ''
         });
     }
+
+    // 2. Add to meeting history
+    if (firestore && user) {
+      const historyColRef = collection(firestore, 'users', user.uid, 'meetingHistory');
+      addDocumentNonBlocking(historyColRef, {
+        roomName: roomName,
+        joinedAt: serverTimestamp(),
+      });
+    }
     
+    // 3. Stop media tracks
     if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
     }
+
+    // 4. Navigate to meeting
     const query = new URLSearchParams({
       audioMuted: String(isAudioMuted),
       videoMuted: String(isVideoMuted || !hasPermissions),
