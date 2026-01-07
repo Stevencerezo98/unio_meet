@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState, useMemo } from 'react';
+import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { useJitsi } from '@/hooks/useJitsi';
 import MeetingToolbar from './MeetingToolbar';
 import ParticipantSidebar from './ParticipantSidebar';
@@ -9,6 +9,11 @@ import { Loader2 } from 'lucide-react';
 export default function MeetingRoom() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const jitsiContainerRef = useRef<HTMLDivElement>(null);
+  const [jitsiNode, setJitsiNode] = useState<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    setJitsiNode(jitsiContainerRef.current);
+  }, []);
 
   const roomName = useMemo(() => `Unio-Premium-Meeting-${Math.random().toString(36).substr(2, 9)}`, []);
   const userName = 'Demo User';
@@ -44,7 +49,7 @@ export default function MeetingRoom() {
 
   const { api, participants, controls } = useJitsi({
     roomName,
-    parentNode: jitsiContainerRef.current,
+    parentNode: jitsiNode,
     userInfo: { displayName: userName },
     configOverwrite,
     interfaceConfigOverwrite,
