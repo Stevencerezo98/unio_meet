@@ -15,6 +15,7 @@ export interface BeforeInstallPromptEvent extends Event {
 export interface PWAContextType {
   canInstall: boolean;
   install: () => Promise<void>;
+  isStandalone: boolean;
 }
 
 export const PWAContext = createContext<PWAContextType | null>(null);

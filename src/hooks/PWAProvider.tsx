@@ -14,15 +14,19 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
       setInstallPrompt(e as BeforeInstallPromptEvent);
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
     const checkStandalone = () => {
         if (window.matchMedia('(display-mode: standalone)').matches) {
             setIsStandalone(true);
+        } else {
+            setIsStandalone(false);
         }
     };
+    
+    // Check on mount
     checkStandalone();
     
+    // Listen for changes
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     const mediaQuery = window.matchMedia('(display-mode: standalone)');
     mediaQuery.addEventListener('change', checkStandalone);
 
@@ -46,6 +50,7 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
   const value: PWAContextType = {
     canInstall: !!installPrompt && !isStandalone,
     install,
+    isStandalone,
   };
 
   return <PWAContext.Provider value={value}>{children}</PWAContext.Provider>;

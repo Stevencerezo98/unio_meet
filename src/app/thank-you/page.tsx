@@ -2,6 +2,8 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { loadLandingContent } from '@/app/actions';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 export default async function ThankYouPage() {
   const content = await loadLandingContent();
@@ -16,7 +18,7 @@ export default async function ThankYouPage() {
           {thankYou.description}
         </p>
         <Button asChild size="lg">
-          <Link href="/">{thankYou.buttonText}</Link>
+          <Link href="/start">{thankYou.buttonText}</Link>
         </Button>
       </div>
     </div>
