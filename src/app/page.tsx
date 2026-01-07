@@ -38,13 +38,13 @@ export default function Home() {
   const handleJoinMeeting = (e: React.FormEvent) => {
     e.preventDefault();
     if (roomName) {
-      router.push(`/meeting/${encodeURIComponent(roomName)}`);
+      router.push(`/lobby/${encodeURIComponent(roomName)}`);
     }
   };
 
   const handleInstantMeeting = async () => {
     const generatedRoomName = await generateRandomRoomName();
-    router.push(`/meeting/${encodeURIComponent(generatedRoomName)}`);
+    router.push(`/lobby/${encodeURIComponent(generatedRoomName)}`);
   };
 
   const handleScheduleMeeting = () => {

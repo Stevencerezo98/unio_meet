@@ -1,28 +1,34 @@
+
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { JitsiApi, JitsiParticipant } from '@/lib/types';
-import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator';
 
 interface UseJitsiProps {
   roomName: string;
   parentNode: React.RefObject<HTMLDivElement>;
   domain?: string;
   onMeetingEnd?: () => void;
+  displayName?: string;
+  startWithAudioMuted?: boolean;
+  startWithVideoMuted?: boolean;
 }
 
 export function useJitsi({
   roomName,
   parentNode,
   domain = 'call.unio.my',
-  onMeetingEnd
+  onMeetingEnd,
+  displayName,
+  startWithAudioMuted = true,
+  startWithVideoMuted = true,
 }: UseJitsiProps) {
   const [api, setApi] = useState<JitsiApi | null>(null);
   const [isApiReady, setApiReady] = useState(false);
   const [isJoined, setIsJoined] = useState(false);
   const [participants, setParticipants] = useState<JitsiParticipant[]>([]);
-  const [isAudioMuted, setAudioMuted] = useState(true);
-  const [isVideoMuted, setVideoMuted] = useState(true);
+  const [isAudioMuted, setAudioMuted] = useState(startWithAudioMuted);
+  const [isVideoMuted, setVideoMuted] = useState(startWithVideoMuted);
   const [isTileView, setTileView] = useState(false);
   const [isScreenSharing, setScreenSharing] = useState(false);
   
@@ -37,11 +43,6 @@ export function useJitsi({
     }
     
     const decodedRoomName = decodeURIComponent(roomName);
-    const randomName = uniqueNamesGenerator({
-        dictionaries: [adjectives, colors, animals],
-        separator: ' ',
-        style: 'capital',
-    });
 
     const jitsiApi = new window.JitsiMeetExternalAPI(domain, {
       roomName: decodedRoomName,
@@ -49,12 +50,12 @@ export function useJitsi({
       width: '100%',
       height: '100%',
       userInfo: {
-          displayName: randomName
+          displayName: displayName
       },
       configOverwrite: {
-        startWithAudioMuted: true,
-        startWithVideoMuted: true,
-        prejoinPageEnabled: true,
+        startWithAudioMuted: startWithAudioMuted,
+        startWithVideoMuted: startWithVideoMuted,
+        prejoinPageEnabled: false,
         disableDeepLinking: true,
         enableWelcomePage: false,
         transcribingEnabled: false,
@@ -84,27 +85,12 @@ export function useJitsi({
     const updateParticipants = () => {
       if (!jitsiApi) return;
       const jitsiParticipants = jitsiApi.getParticipantsInfo();
-      const localParticipant = jitsiApi.getParticipantsInfo().find(p => p.local);
-      
-      const participantMap = new Map<string, JitsiParticipant>();
-
-      if (localParticipant) {
-          participantMap.set(localParticipant.id, {
-              ...localParticipant,
-              displayName: localParticipant.displayName || 'Me',
-          });
-      }
-
-      jitsiParticipants.forEach(p => {
-        if (!p.local) {
-            participantMap.set(p.id, {
-                ...p,
-                displayName: p.displayName || 'Guest',
-            });
-        }
-      });
-      
-      setParticipants(Array.from(participantMap.values()));
+      // Jitsi now includes local participant in getParticipantsInfo
+      const allParticipants = jitsiParticipants.map(p => ({
+        ...p,
+        displayName: p.local ? (jitsiApi.getDisplayName(p.id) || 'Me') : (p.displayName || 'Guest'),
+      }));
+      setParticipants(allParticipants);
     }
 
     jitsiApi.on('videoConferenceJoined', () => {

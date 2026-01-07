@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useRef, useState } from 'react';
@@ -9,9 +10,17 @@ import { useRouter } from 'next/navigation';
 
 interface MeetingRoomProps {
     roomName: string;
+    displayName?: string;
+    startWithAudioMuted?: boolean;
+    startWithVideoMuted?: boolean;
 }
 
-export default function MeetingRoom({ roomName }: MeetingRoomProps) {
+export default function MeetingRoom({ 
+    roomName,
+    displayName,
+    startWithAudioMuted,
+    startWithVideoMuted
+}: MeetingRoomProps) {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const jitsiContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -24,6 +33,9 @@ export default function MeetingRoom({ roomName }: MeetingRoomProps) {
     roomName: roomName,
     parentNode: jitsiContainerRef,
     onMeetingEnd,
+    displayName,
+    startWithAudioMuted,
+    startWithVideoMuted
   });
 
   const toggleSidebar = () => {
