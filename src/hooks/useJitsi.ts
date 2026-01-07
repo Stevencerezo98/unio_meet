@@ -49,14 +49,12 @@ export function useJitsi({
       parentNode: parentNode.current,
       width: '100%',
       height: '100%',
-      userInfo: {
-          displayName: displayName
-      },
       configOverwrite: {
         startWithAudioMuted: startWithAudioMuted,
         startWithVideoMuted: startWithVideoMuted,
+        prejoinPageEnabled: false,
         prejoinConfig: {
-            enabled: false
+           enabled: false,
         },
         disableDeepLinking: true,
         enableWelcomePage: false,
@@ -99,10 +97,12 @@ export function useJitsi({
         // Add local user first, ensuring only one entry
         if (localUserArray.length > 0) {
             const localUser = localUserArray[0];
-            uniqueParticipants.set(localUser.id, {
-                ...localUser,
-                displayName: jitsiApi.getDisplayName(localUser.id) || 'Me',
-            });
+            if(!uniqueParticipants.has(localUser.id)){
+                 uniqueParticipants.set(localUser.id, {
+                    ...localUser,
+                    displayName: jitsiApi.getDisplayName(localUser.id) || 'Me',
+                });
+            }
         }
         
         // Add remote users
