@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 interface MeetingRoomProps {
     roomName: string;
     displayName?: string;
+    avatarUrl?: string;
     startWithAudioMuted?: boolean;
     startWithVideoMuted?: boolean;
 }
@@ -18,6 +19,7 @@ interface MeetingRoomProps {
 export default function MeetingRoom({ 
     roomName,
     displayName,
+    avatarUrl,
     startWithAudioMuted,
     startWithVideoMuted
 }: MeetingRoomProps) {
@@ -34,6 +36,7 @@ export default function MeetingRoom({
     parentNode: jitsiContainerRef,
     onMeetingEnd,
     displayName,
+    avatarUrl,
     startWithAudioMuted,
     startWithVideoMuted
   });

@@ -10,6 +10,7 @@ interface UseJitsiProps {
   domain?: string;
   onMeetingEnd?: () => void;
   displayName?: string;
+  avatarUrl?: string;
   startWithAudioMuted?: boolean;
   startWithVideoMuted?: boolean;
 }
@@ -20,6 +21,7 @@ export function useJitsi({
   domain = 'call.unio.my',
   onMeetingEnd,
   displayName,
+  avatarUrl,
   startWithAudioMuted = true,
   startWithVideoMuted = true,
 }: UseJitsiProps) {
@@ -64,8 +66,6 @@ export function useJitsi({
         fileRecordingsEnabled: false,
       },
       interfaceConfigOverwrite: {
-        BRAND_WATERMARK_LINK: '',
-        JITSI_WATERMARK_LINK: '',
         SHOW_JITSI_WATERMARK: false,
         SHOW_WATERMARK_FOR_GUESTS: false,
         SHOW_BRAND_WATERMARK: false,
@@ -96,6 +96,7 @@ export function useJitsi({
              newParticipantsMap.set(localId, {
                 ...localParticipant,
                 displayName: jitsiApi.getDisplayName(localId) || 'Me',
+                avatarURL: jitsiApi.getAvatarURL(localId),
                 local: true,
              });
         }
@@ -106,7 +107,8 @@ export function useJitsi({
             if (!p.local && !newParticipantsMap.has(p.id)) {
                  newParticipantsMap.set(p.id, {
                     ...p,
-                    displayName: p.displayName || 'Guest'
+                    displayName: p.displayName || 'Guest',
+                    avatarURL: jitsiApi.getAvatarURL(p.id),
                 });
             }
         });
@@ -121,6 +123,9 @@ export function useJitsi({
       jitsiApi.isVideoMuted().then(setVideoMuted);
        if (displayName) {
         jitsiApi.executeCommand('displayName', displayName);
+      }
+      if (avatarUrl) {
+        jitsiApi.executeCommand('avatarUrl', avatarUrl);
       }
       updateParticipants();
     });
@@ -149,7 +154,7 @@ export function useJitsi({
         jitsiApi.dispose();
       }
     };
-  }, [roomName, domain, parentNode, startWithAudioMuted, startWithVideoMuted, displayName]);
+  }, [roomName, domain, parentNode, startWithAudioMuted, startWithVideoMuted, displayName, avatarUrl]);
   
   const toggleAudio = useCallback(() => api?.executeCommand('toggleAudio'), [api]);
   const toggleVideo = useCallback(() => api?.executeCommand('toggleVideo'), [api]);

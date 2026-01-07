@@ -1,3 +1,4 @@
+
 export interface JitsiParticipant {
   id: string;
   displayName: string;
@@ -12,6 +13,7 @@ export interface JitsiApi {
   on: (event: string, handler: (...args: any[]) => void) => void;
   off: (event: string, handler: (...args: any[]) => void) => void;
   getParticipantsInfo: () => JitsiParticipant[];
+  getParticipantInfo: (participantId: string) => JitsiParticipant;
   dispose: () => void;
   isAudioMuted: () => Promise<boolean>;
   isVideoMuted: () => Promise<boolean>;

@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, ChangeEvent } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Mic, MicOff, Video, VideoOff, Loader2, AlertCircle } from 'lucide-react';
+import { Mic, MicOff, Video, VideoOff, Loader2, AlertCircle, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,9 +11,11 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { useToast } from '@/hooks/use-toast';
 import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function LobbyRoom() {
   const [displayName, setDisplayName] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isAudioMuted, setAudioMuted] = useState(true);
   const [isVideoMuted, setVideoMuted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -22,6 +24,7 @@ export default function LobbyRoom() {
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const router = useRouter();
   const params = useParams();
@@ -64,7 +67,7 @@ export default function LobbyRoom() {
     } finally {
         setIsLoading(false);
     }
-  }, [toast, isAudioMuted]);
+  }, [isAudioMuted]);
 
   useEffect(() => {
     getMediaPermissions();
@@ -86,8 +89,13 @@ export default function LobbyRoom() {
       displayName: displayName || 'Guest',
       audioMuted: String(isAudioMuted),
       videoMuted: String(isVideoMuted || !hasPermissions), // Mute video if no permissions
-    }).toString();
-    router.push(`/meeting/${params.roomName}?${query}`);
+    });
+
+    if (avatarUrl) {
+      query.set('avatarUrl', avatarUrl);
+    }
+
+    router.push(`/meeting/${params.roomName}?${query.toString()}`);
   };
 
   const toggleAudio = () => {
@@ -107,6 +115,17 @@ export default function LobbyRoom() {
         streamRef.current.getVideoTracks().forEach(track => {
             track.enabled = !newVideoMuted
         });
+    }
+  };
+
+  const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setAvatarUrl(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -166,18 +185,38 @@ export default function LobbyRoom() {
             </div>
           </div>
           <div className="space-y-6">
-            <div className="space-y-2">
-                <Label htmlFor="displayName" className="text-lg">Your Name</Label>
-                <Input
-                    id="displayName"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    className="h-12 text-lg"
-                    placeholder="Enter your name"
-                />
+            <div className="space-y-4">
+                <Label htmlFor="displayName" className="text-lg">Your Name & Avatar</Label>
+                <div className="flex items-center gap-4">
+                    <div className="relative">
+                        <Avatar className="h-16 w-16 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                            <AvatarImage src={avatarUrl ?? undefined} />
+                            <AvatarFallback className="text-2xl">
+                                {displayName?.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                        </Avatar>
+                        <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full p-1.5 border-2 border-background cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                           <Pencil className="h-3 w-3" />
+                        </div>
+                        <input 
+                            type="file" 
+                            ref={fileInputRef} 
+                            onChange={handleAvatarChange} 
+                            className="hidden"
+                            accept="image/png, image/jpeg"
+                        />
+                    </div>
+                    <Input
+                        id="displayName"
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        className="h-12 text-lg"
+                        placeholder="Enter your name"
+                    />
+                </div>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">This name will be displayed to others in the meeting.</p>
+              <p className="text-sm text-muted-foreground">This name and avatar will be displayed to others in the meeting.</p>
             </div>
           </div>
         </CardContent>

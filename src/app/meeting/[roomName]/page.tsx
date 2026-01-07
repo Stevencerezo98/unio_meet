@@ -11,6 +11,7 @@ function MeetingPageContent({ params }: { params: Promise<{ roomName: string }> 
   const displayName = searchParams.get('displayName') || 'Guest';
   const audioMuted = searchParams.get('audioMuted') === 'true';
   const videoMuted = searchParams.get('videoMuted') === 'true';
+  const avatarUrl = searchParams.get('avatarUrl');
 
   return (
     <main>
@@ -19,6 +20,7 @@ function MeetingPageContent({ params }: { params: Promise<{ roomName: string }> 
         displayName={displayName}
         startWithAudioMuted={audioMuted}
         startWithVideoMuted={videoMuted}
+        avatarUrl={avatarUrl || undefined}
       />
     </main>
   );
