@@ -38,7 +38,7 @@ export function useJitsi({
   }, [onMeetingEnd]);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.JitsiMeetExternalAPI || !parentNode.current || api) {
+    if (typeof window === 'undefined' || !window.JitsiMeetExternalAPI || !parentNode.current) {
       return;
     }
     
@@ -88,24 +88,21 @@ export function useJitsi({
     const updateParticipants = () => {
         if (!jitsiApi) return;
         
-        const newParticipantsMap = new Map<string, JitsiParticipant>();
-        
-        // Get all participants from the API
         const allParticipants = jitsiApi.getParticipantsInfo();
+        const newParticipantsMap = new Map<string, JitsiParticipant>();
 
-        // Find and add the local participant first
-        const localParticipant = allParticipants.find(p => p.local);
-        if (localParticipant) {
-            newParticipantsMap.set(localParticipant.id, {
-                ...localParticipant,
-                displayName: jitsiApi.getDisplayName(localParticipant.id) || 'Me',
+        const localParticipantInfo = allParticipants.find(p => p.local);
+        
+        if (localParticipantInfo) {
+            newParticipantsMap.set(localParticipantInfo.id, {
+                ...localParticipantInfo,
+                displayName: jitsiApi.getDisplayName(localParticipantInfo.id) || 'Me',
             });
         }
         
-        // Add other non-local participants, ensuring no duplicates
         allParticipants.forEach(p => {
-            if (!p.local && !newParticipantsMap.has(p.id)) {
-                newParticipantsMap.set(p.id, {
+            if (!p.local) {
+                 newParticipantsMap.set(p.id, {
                     ...p,
                     displayName: p.displayName || 'Guest'
                 });
