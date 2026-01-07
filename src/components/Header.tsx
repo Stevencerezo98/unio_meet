@@ -16,24 +16,16 @@ import type { HeaderContent, NavItem as NavItemType, Link as LinkType } from '@/
 import { ThemeToggle } from './ThemeToggle';
 import { usePWA } from '@/hooks/usePWA';
 
-const InstallableLink = ({ item, isMenuItem }: { item: LinkType, isMenuItem?: boolean }) => {
-    const { canInstall, install } = usePWA();
-
-    if (item.url === '#install-pwa' && canInstall) {
-        const style = isMenuItem 
-            ? { all: 'unset' as 'unset', cursor: 'pointer' }
-            : { cursor: 'pointer' };
-        
-        return (
-             <button onClick={install} style={style} className={`w-full text-left transition-colors ${isMenuItem ? '' : 'hover:text-primary'}`}>
-                {item.text}
-            </button>
-        )
-    }
-    return <Link href={item.url} className={isMenuItem ? undefined : "transition-colors hover:text-primary"}>{item.text}</Link>
-}
-
 const NavItem = ({ item }: { item: NavItemType }) => {
+  const { canInstall, install } = usePWA();
+
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url: string) => {
+    if (url === '#install-pwa' && canInstall) {
+      e.preventDefault();
+      install();
+    }
+  };
+
   if (item.items && item.items.length > 0) {
     return (
         <DropdownMenu>
@@ -44,16 +36,28 @@ const NavItem = ({ item }: { item: NavItemType }) => {
                 </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
-                {item.items.map((subItem, index) => (
+                {item.items.map((subItem, index) => {
+                   if (subItem.url === '#install-pwa' && !canInstall) return null;
+                   return (
                     <DropdownMenuItem key={index} asChild>
-                        <InstallableLink item={subItem} isMenuItem />
+                        <Link href={subItem.url} onClick={(e) => handleLinkClick(e, subItem.url)}>
+                            {subItem.text}
+                        </Link>
                     </DropdownMenuItem>
-                ))}
+                   )
+                })}
             </DropdownMenuContent>
         </DropdownMenu>
     );
   }
-  return <InstallableLink item={item} />;
+  
+  if (item.url === '#install-pwa' && !canInstall) return null;
+  
+  return (
+    <Link href={item.url || '#'} onClick={(e) => handleLinkClick(e, item.url || '#')} className="transition-colors hover:text-primary">
+        {item.text}
+    </Link>
+  );
 };
 
 export default function Header({ content }: { content: HeaderContent | null }) {
@@ -109,3 +113,4 @@ export default function Header({ content }: { content: HeaderContent | null }) {
     </motion.header>
   );
 }
+

@@ -4,27 +4,30 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Video, Facebook, Instagram } from 'lucide-react';
-import type { FooterContent, HeaderContent, Link as LinkType } from '@/lib/landing-content';
+import type { FooterContent } from '@/lib/landing-content';
 import { usePWA } from '@/hooks/usePWA';
 
+const FooterLink = ({ href, children }: { href: string; children: React.ReactNode }) => {
+  const { canInstall, install } = usePWA();
 
-const InstallableFooterLink = ({ link }: { link: LinkType }) => {
-    const { canInstall, install } = usePWA();
-    if (link.url === '#install-pwa' && canInstall) {
-        return (
-            <button onClick={install} className="text-sm text-muted-foreground transition-colors hover:text-foreground text-left">
-                {link.text}
-            </button>
-        )
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (href === '#install-pwa' && canInstall) {
+      e.preventDefault();
+      install();
     }
-    return <FooterLink href={link.url}>{link.text}</FooterLink>
-}
+  };
 
-const FooterLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
-  <Link href={href} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-    {children}
-  </Link>
-);
+  if (href === '#install-pwa' && !canInstall) {
+    return null;
+  }
+  
+  return (
+    <Link href={href} onClick={handleClick} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+        {children}
+    </Link>
+  );
+};
+
 
 const SocialIcon = ({ iconName, href }: { iconName: string; href: string }) => {
   const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = {
@@ -85,7 +88,7 @@ export default function Footer({ content }: { content: FooterContent | null }) {
               <h4 className="font-semibold text-foreground">{column.title}</h4>
               <div className="flex flex-col space-y-2">
                 {column.links.map((link, linkIndex) => (
-                  <InstallableFooterLink key={linkIndex} link={link} />
+                  <FooterLink key={linkIndex} href={link.url}>{link.text}</FooterLink>
                 ))}
               </div>
             </div>
