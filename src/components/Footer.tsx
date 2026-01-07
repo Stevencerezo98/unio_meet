@@ -2,8 +2,6 @@
 
 import Link from 'next/link';
 import { Video, Facebook, Instagram, MessageCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { loadLandingContent } from '@/app/actions';
 import type { FooterContent } from '@/lib/landing-content';
 
 const FooterLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
@@ -16,7 +14,6 @@ const SocialIcon = ({ iconName, href }: { iconName: string; href: string }) => {
   const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = {
     Facebook: Facebook,
     Instagram: Instagram,
-    MessageCircle: MessageCircle,
     TikTok: () => (
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
         <path d="M12.52.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.65 4.31 1.7.03 1.31-.01 2.61-.02 3.91-.19.01-.38.02-.57.02-1.55.01-3.1-.48-4.36-1.5-1.25-1.02-1.95-2.5-1.95-4.04 0-.19.01-.38.02-.57z"/>
@@ -42,17 +39,7 @@ const SocialIcon = ({ iconName, href }: { iconName: string; href: string }) => {
 };
 
 
-export default function Footer() {
-  const [content, setContent] = useState<FooterContent | null>(null);
-
-  useEffect(() => {
-    async function fetchContent() {
-      const landingContent = await loadLandingContent();
-      setContent(landingContent.footer);
-    }
-    fetchContent();
-  }, []);
-
+export default function Footer({ content }: { content: FooterContent | null }) {
   if (!content) {
     return (
       <footer className="border-t border-border bg-background/50">

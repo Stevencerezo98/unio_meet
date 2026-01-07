@@ -63,7 +63,7 @@ export default function Home() {
     );
   }
 
-  const { hero, features } = content;
+  const { hero, features, footer } = content;
 
   return (
     <div className="relative flex flex-col min-h-screen w-full bg-background text-foreground">
@@ -190,7 +190,7 @@ export default function Home() {
           </div>
         </motion.section>
       </main>
-      <Footer />
+      <Footer content={footer} />
     </div>
   );
 }
