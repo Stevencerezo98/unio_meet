@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { useForm, useFieldArray, FormProvider, useFormContext } from 'react-hook-form';
+import { useForm, useFieldArray, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import type { LandingContent } from '@/lib/landing-content';
@@ -72,50 +72,6 @@ const landingContentSchema = z.object({
 interface AdminFormProps {
   content: LandingContent;
 }
-
-function LinksArray({ name }: { name: `footer.linkColumns.${number}.links` }) {
-  const { control, register } = useFormContext();
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name,
-  });
-
-  return (
-    <div className="space-y-2">
-      {fields.map((field, index) => (
-        <div key={field.id} className="flex items-center gap-2">
-          <Input
-            {...register(`${name}.${index}.text`)}
-            placeholder="Link Text"
-            className="flex-1"
-          />
-          <Input
-            {...register(`${name}.${index}.url`)}
-            placeholder="URL"
-            className="flex-1"
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => remove(index)}
-          >
-            <Trash className="h-4 w-4" />
-          </Button>
-        </div>
-      ))}
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        onClick={() => append({ text: '', url: '#' })}
-      >
-        Add Link
-      </Button>
-    </div>
-  );
-}
-
 
 export function AdminForm({ content }: AdminFormProps) {
   const { toast } = useToast();
@@ -339,20 +295,59 @@ export function AdminForm({ content }: AdminFormProps) {
                         {/* Link Columns */}
                         <div className="space-y-4">
                             <h3 className="text-lg font-semibold">Footer Link Columns</h3>
-                            {columnFields.map((column, colIndex) => (
-                                <Card key={column.id} className="p-4 relative">
-                                    <div className="space-y-2">
-                                        <Label>Column Title</Label>
-                                        <Input {...register(`footer.linkColumns.${colIndex}.title`)} />
-                                        <hr className="my-4" />
-                                        <h4 className="font-medium">Links in this column:</h4>
-                                        <LinksArray name={`footer.linkColumns.${colIndex}.links`} />
-                                    </div>
-                                     <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-6 w-6" onClick={() => removeColumn(colIndex)}>
-                                        <Trash className="h-4 w-4" />
-                                    </Button>
-                                </Card>
-                            ))}
+                            {columnFields.map((column, colIndex) => {
+                                const { fields: linkFields, append: appendLink, remove: removeLink } = useFieldArray({
+                                    control,
+                                    name: `footer.linkColumns.${colIndex}.links`,
+                                });
+
+                                return (
+                                    <Card key={column.id} className="p-4 relative">
+                                        <div className="space-y-2">
+                                            <Label>Column Title</Label>
+                                            <Input {...register(`footer.linkColumns.${colIndex}.title`)} />
+                                            <hr className="my-4" />
+                                            <h4 className="font-medium">Links in this column:</h4>
+                                            
+                                            <div className="space-y-2">
+                                                {linkFields.map((link, linkIndex) => (
+                                                    <div key={link.id} className="flex items-center gap-2">
+                                                        <Input
+                                                            {...register(`footer.linkColumns.${colIndex}.links.${linkIndex}.text`)}
+                                                            placeholder="Link Text"
+                                                            className="flex-1"
+                                                        />
+                                                        <Input
+                                                            {...register(`footer.linkColumns.${colIndex}.links.${linkIndex}.url`)}
+                                                            placeholder="URL"
+                                                            className="flex-1"
+                                                        />
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            onClick={() => removeLink(linkIndex)}
+                                                        >
+                                                            <Trash className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                ))}
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => appendLink({ text: '', url: '#' })}
+                                                >
+                                                    Add Link
+                                                </Button>
+                                            </div>
+                                        </div>
+                                         <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-6 w-6" onClick={() => removeColumn(colIndex)}>
+                                            <Trash className="h-4 w-4" />
+                                        </Button>
+                                    </Card>
+                                )
+                            })}
                              <Button type="button" variant="outline" onClick={() => appendColumn({ title: '', links: [{text: '', url: ''}] })}>
                                 Add Link Column
                             </Button>
@@ -402,5 +397,3 @@ export function AdminForm({ content }: AdminFormProps) {
     </FormProvider>
   );
 }
-
-    
