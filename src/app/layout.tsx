@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: 'Unio Premium Video Platform',
   description: 'High-end video call platform built with Next.js and Jitsi',
   manifest: '/manifest.json',
+  themeColor: '#0a0a0a',
   other: {
     'apple-mobile-web-app-capable': 'yes',
     'apple-mobile-web-app-status-bar-style': 'black-translucent',

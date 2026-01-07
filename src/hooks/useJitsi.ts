@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -93,16 +92,18 @@ export function useJitsi({
         
         const newParticipantsMap = new Map<string, JitsiParticipant>();
         
-        const localParticipantInfo = jitsiApi.getParticipantsInfo().find(p => p.local);
-        if (localParticipantInfo) {
-             const localId = localParticipantInfo.id;
-             const localParticipant = {
-                ...localParticipantInfo,
+        // Ensure the local participant is always handled correctly
+        const localId = jitsiApi.getParticipantsInfo().find(p => p.local)?.id;
+        if (localId) {
+            const localParticipant = jitsiApi.getParticipantInfo(localId);
+             newParticipantsMap.set(localId, {
+                ...localParticipant,
                 displayName: jitsiApi.getDisplayName(localId) || 'Me',
-             };
-             newParticipantsMap.set(localId, localParticipant);
+                local: true,
+             });
         }
 
+        // Add remote participants, ensuring no duplicates
         const allParticipants = jitsiApi.getParticipantsInfo();
         allParticipants.forEach(p => {
             if (!p.local && !newParticipantsMap.has(p.id)) {
@@ -185,7 +186,7 @@ export function useJitsi({
       toggleTileView,
       toggleShareScreen,
       hangup,
-      sendReaction
+      sendReaction,
     ]
   );
 
