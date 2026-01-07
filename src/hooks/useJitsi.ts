@@ -86,29 +86,33 @@ export function useJitsi({
     setApi(jitsiApi);
     
     const updateParticipants = () => {
-        if (!jitsiApi) return;
-        const newParticipantsMap = new Map<string, JitsiParticipant>();
+      if (!jitsiApi) return;
+      const newParticipantsMap = new Map<string, JitsiParticipant>();
 
-        // Get local participant first
-        const localParticipantInfo = jitsiApi.getParticipantsInfo().find(p => p.local);
+      // Get local participant first
+      const localId = jitsiApi.getParticipantsInfo().find(p => p.local)?.id;
+      
+      if (localId) {
+        const localParticipantInfo = jitsiApi.getParticipantsInfo().find(p => p.id === localId && p.local);
         if (localParticipantInfo) {
-            newParticipantsMap.set(localParticipantInfo.id, {
-                ...localParticipantInfo,
-                displayName: jitsiApi.getDisplayName(localParticipantInfo.id) || 'Me',
-            });
+          newParticipantsMap.set(localParticipantInfo.id, {
+            ...localParticipantInfo,
+            displayName: jitsiApi.getDisplayName(localParticipantInfo.id) || 'Me',
+          });
         }
-        
-        // Add other non-local participants
-        jitsiApi.getParticipantsInfo().forEach(p => {
-            if (!p.local && !newParticipantsMap.has(p.id)) {
-                 newParticipantsMap.set(p.id, {
-                    ...p,
-                    displayName: p.displayName || 'Guest'
-                });
-            }
-        });
-        
-        setParticipants(Array.from(newParticipantsMap.values()));
+      }
+
+      // Add other non-local participants
+      jitsiApi.getParticipantsInfo().forEach(p => {
+          if (!p.local && !newParticipantsMap.has(p.id)) {
+               newParticipantsMap.set(p.id, {
+                  ...p,
+                  displayName: p.displayName || 'Guest'
+              });
+          }
+      });
+      
+      setParticipants(Array.from(newParticipantsMap.values()));
     }
 
 
@@ -140,7 +144,7 @@ export function useJitsi({
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parentNode, roomName, domain, startWithAudioMuted, startWithVideoMuted]);
+  }, [parentNode, roomName, domain, startWithAudioMuted, startWithVideoMuted, displayName, api]);
   
   const toggleAudio = useCallback(() => api?.executeCommand('toggleAudio'), [api]);
   const toggleVideo = useCallback(() => api?.executeCommand('toggleVideo'), [api]);
@@ -148,7 +152,7 @@ export function useJitsi({
   const toggleShareScreen = useCallback(() => api?.executeCommand('toggleShareScreen'), [api]);
   const hangup = useCallback(() => api?.executeCommand('hangup'), [api]);
   const sendReaction = useCallback((reaction: string) => {
-    api?.executeCommand('sendReaction', reaction);
+    api?.executeCommand('toggle-reaction', reaction);
   }, [api]);
 
   const controls = useMemo(
@@ -174,7 +178,7 @@ export function useJitsi({
       toggleTileView,
       toggleShareScreen,
       hangup,
-      sendReaction,
+      sendReaction
     ]
   );
 
