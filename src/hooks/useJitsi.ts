@@ -71,8 +71,9 @@ export function useJitsi({
     const updateParticipants = () => {
       if (!jitsiApi) return;
       const participantMap = new Map<string, JitsiParticipant>();
+      const jitsiParticipants = jitsiApi.getParticipantsInfo();
       
-      const localParticipant = jitsiApi.getParticipantsInfo().find(p => p.local);
+      const localParticipant = jitsiParticipants.find(p => p.local);
       if(localParticipant) {
         participantMap.set(localParticipant.id, {
           ...localParticipant,
@@ -80,7 +81,7 @@ export function useJitsi({
         });
       }
 
-      jitsiApi.getParticipantsInfo().forEach(p => {
+      jitsiParticipants.forEach(p => {
         if (!participantMap.has(p.id)) {
             participantMap.set(p.id, {
                 ...p,
