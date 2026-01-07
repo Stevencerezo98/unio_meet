@@ -1,60 +1,31 @@
 'use client';
 
-import React, { useRef, useState, useMemo } from 'react';
+import React, { useRef, useState } from 'react';
 import { useJitsi } from '@/hooks/useJitsi';
 import MeetingToolbar from './MeetingToolbar';
 import ParticipantSidebar from './ParticipantSidebar';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-export default function MeetingRoom() {
+interface MeetingRoomProps {
+    roomName: string;
+    userName: string;
+}
+
+export default function MeetingRoom({ roomName, userName }: MeetingRoomProps) {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const jitsiContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-
-  const roomName = useMemo(() => `Unio-Premium-Meeting-${Math.random().toString(36).substr(2, 9)}`, []);
-  const userName = 'Demo User';
 
   const onMeetingEnd = () => {
     router.push('/thank-you');
   };
 
-  const configOverwrite = {
-    startWithAudioMuted: true,
-    startWithVideoMuted: true,
-    prejoinPageEnabled: false,
-    disableDeepLinking: true,
-    enableWelcomePage: false,
-    transcribingEnabled: false,
-    recordingService: {
-        enabled: false,
-    },
-    liveStreaming: {
-        enabled: false,
-    },
-    fileRecordingsEnabled: false,
-  };
-
-  const interfaceConfigOverwrite = {
-    TOOLBAR_BUTTONS: [],
-    SETTINGS_SECTIONS: ['devices', 'language', 'profile', 'moderator'],
-    SHOW_JITSI_WATERMARK: false,
-    SHOW_WATERMARK_FOR_GUESTS: false,
-    SHOW_BRAND_WATERMARK: false,
-    SHOW_POWERED_BY_WATERMARK: false,
-    SHOW_CHROME_EXTENSION_BANNER: false,
-    TILE_VIEW_MAX_COLUMNS: 5,
-    TOOLBAR_ALWAYS_VISIBLE: false,
-    DISABLE_VIDEO_BACKGROUND: false,
-  };
-
   const { isJoined, api, participants, controls } = useJitsi({
     roomName,
+    userName,
     parentNode: jitsiContainerRef,
     onMeetingEnd,
-    userInfo: { displayName: userName },
-    configOverwrite,
-    interfaceConfigOverwrite,
   });
 
   const toggleSidebar = () => {

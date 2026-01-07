@@ -12,7 +12,7 @@ export default function ThankYouPage() {
           Thank you for using Unio Premium Video Platform. You have successfully left the meeting.
         </p>
         <Button asChild size="lg">
-          <Link href="/">Start a New Meeting</Link>
+          <Link href="/">Return to Homepage</Link>
         </Button>
       </div>
     </div>
