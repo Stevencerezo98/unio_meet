@@ -59,6 +59,7 @@ export default function Header() {
              <DropdownMenuItem>Blog</DropdownMenuItem>
              <DropdownMenuItem>Centro de Soporte</DropdownMenuItem>
              <DropdownMenuItem>Tutoriales en Video</DropdownMenuItem>
+             <DropdownMenuItem>Descargar la App</DropdownMenuItem>
           </DropdownNavItem>
           
           <NavItem href="#">Contactar a Ventas</NavItem>
