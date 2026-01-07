@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -49,7 +50,7 @@ const ToolbarButton = ({
         size="icon"
         onClick={onClick}
         className={`rounded-full h-14 w-14 transition-colors duration-300 ${
-          isActive ? 'bg-primary/80 hover:bg-primary' : 'bg-neutral-700/80 hover:bg-neutral-600/80'
+          isActive ? 'bg-primary/80 hover:bg-primary' : 'bg-black/40 hover:bg-black/60'
         }`}
       >
         {children}
