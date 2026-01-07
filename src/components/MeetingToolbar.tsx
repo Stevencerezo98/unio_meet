@@ -13,10 +13,12 @@ import {
   Users,
   ScreenShareOff,
   Smile,
+  Share2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useToast } from '@/hooks/use-toast';
 
 interface MeetingToolbarProps {
   isAudioMuted: boolean;
@@ -135,6 +137,19 @@ export default function MeetingToolbar({
   hangup,
   sendReaction,
 }: MeetingToolbarProps) {
+  const { toast } = useToast();
+
+  const handleCopyLink = () => {
+    const currentUrl = window.location.href;
+    const lobbyUrl = currentUrl.replace('/meeting/', '/lobby/');
+    navigator.clipboard.writeText(lobbyUrl).then(() => {
+      toast({
+        title: '¡Enlace de invitación copiado!',
+        description: 'Ya puedes compartirlo con otros participantes.',
+      });
+    });
+  };
+
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pb-[env(safe-area-inset-bottom)]">
       <TooltipProvider>
@@ -157,6 +172,13 @@ export default function MeetingToolbar({
             ) : (
               <ScreenShare className="h-6 w-6" />
             )}
+          </ToolbarButton>
+          
+          <ToolbarButton
+            onClick={handleCopyLink}
+            label="Copiar enlace de invitación"
+          >
+            <Share2 className="h-6 w-6" />
           </ToolbarButton>
 
           <ReactionsPopover onReactionClick={sendReaction} />
