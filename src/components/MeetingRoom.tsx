@@ -9,10 +9,9 @@ import { useRouter } from 'next/navigation';
 
 interface MeetingRoomProps {
     roomName: string;
-    userName: string;
 }
 
-export default function MeetingRoom({ roomName, userName }: MeetingRoomProps) {
+export default function MeetingRoom({ roomName }: MeetingRoomProps) {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const jitsiContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -23,7 +22,6 @@ export default function MeetingRoom({ roomName, userName }: MeetingRoomProps) {
 
   const { isJoined, api, participants, controls } = useJitsi({
     roomName,
-    userName,
     parentNode: jitsiContainerRef,
     onMeetingEnd,
   });

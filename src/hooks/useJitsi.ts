@@ -5,7 +5,6 @@ import type { JitsiApi, JitsiParticipant } from '@/lib/types';
 
 interface UseJitsiProps {
   roomName: string;
-  userName: string;
   parentNode: React.RefObject<HTMLDivElement>;
   domain?: string;
   onMeetingEnd?: () => void;
@@ -13,7 +12,6 @@ interface UseJitsiProps {
 
 export function useJitsi({
   roomName,
-  userName,
   parentNode,
   domain = 'call.unio.my',
   onMeetingEnd
@@ -41,11 +39,10 @@ export function useJitsi({
       parentNode: parentNode.current,
       width: '100%',
       height: '100%',
-      userInfo: { displayName: userName },
       configOverwrite: {
         startWithAudioMuted: true,
         startWithVideoMuted: true,
-        prejoinPageEnabled: false,
+        prejoinPageEnabled: true,
         disableDeepLinking: true,
         enableWelcomePage: false,
         transcribingEnabled: false,
@@ -70,27 +67,22 @@ export function useJitsi({
     setApi(jitsiApi);
     
     const updateParticipants = () => {
-        const participantMap = new Map<string, JitsiParticipant>();
-        const jitsiParticipants = jitsiApi.getParticipantsInfo();
-        const localId = jitsiApi.getParticipantsInfo().find(p => p.id === 'local')?.id || 'local';
-
-        participantMap.set(localId, {
-            id: localId,
-            displayName: userName || 'You',
-            avatarURL: jitsiApi.getAvatarURL?.(localId),
-            role: 'moderator',
-            formattedDisplayName: `${userName || 'You'} (you)`,
-        });
-
-        jitsiParticipants.forEach(p => {
-            if (p.id !== 'local' && !participantMap.has(p.id)) {
-                participantMap.set(p.id, p);
-            }
-        });
-        setParticipants(Array.from(participantMap.values()));
+      if (!jitsiApi) return;
+      const participantMap = new Map<string, JitsiParticipant>();
+      const jitsiParticipants = jitsiApi.getParticipantsInfo();
+      
+      jitsiParticipants.forEach(p => {
+        if (!participantMap.has(p.id)) {
+            participantMap.set(p.id, {
+                ...p,
+                displayName: p.displayName || 'Guest',
+            });
+        }
+      });
+      setParticipants(Array.from(participantMap.values()));
     }
 
-    jitsiApi.on('videoConferenceJoined', () => {
+    jitsiApi.on('videoConferenceJoined', (data: {displayName: string}) => {
       setIsJoined(true);
       jitsiApi.isAudioMuted().then(setAudioMuted);
       jitsiApi.isVideoMuted().then(setVideoMuted);
@@ -110,12 +102,12 @@ export function useJitsi({
     jitsiApi.on('screenSharingStatusChanged', (payload: { on: boolean }) => setScreenSharing(payload.on));
 
     return () => {
+      if(jitsiApi) {
         jitsiApi.dispose();
+      }
     };
-  // We want to run this effect only once when the component mounts and the parent node is available.
-  // The API and parentNode check at the start of the effect prevents re-runs.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parentNode.current]);
+  }, [parentNode, roomName, domain]);
   
   const toggleAudio = useCallback(() => api?.executeCommand('toggleAudio'), [api]);
   const toggleVideo = useCallback(() => api?.executeCommand('toggleVideo'), [api]);

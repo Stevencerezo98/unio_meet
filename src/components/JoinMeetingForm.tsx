@@ -9,14 +9,13 @@ import { Label } from '@/components/ui/label';
 import { Video } from 'lucide-react';
 
 export default function JoinMeetingForm() {
-  const [userName, setUserName] = useState('');
   const [roomName, setRoomName] = useState('');
   const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (userName && roomName) {
-      router.push(`/meeting/${encodeURIComponent(roomName)}?userName=${encodeURIComponent(userName)}`);
+    if (roomName) {
+      router.push(`/meeting/${encodeURIComponent(roomName)}`);
     }
   };
 
@@ -27,22 +26,10 @@ export default function JoinMeetingForm() {
             <Video className="h-6 w-6"/>
             Join a Meeting
         </CardTitle>
-        <CardDescription>Enter your details to start or join a video call.</CardDescription>
+        <CardDescription>Enter a room name to start or join a video call.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="userName">Your Name</Label>
-            <Input
-              id="userName"
-              type="text"
-              placeholder="E.g., Jane Doe"
-              value={userName}
-              onChange={(e) => setUserName(e.target.value)}
-              required
-              className="h-12 text-base"
-            />
-          </div>
           <div className="space-y-2">
             <Label htmlFor="roomName">Room Name</Label>
             <Input
