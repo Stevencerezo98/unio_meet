@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +10,28 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { login } from '../actions';
 import { useToast } from '@/hooks/use-toast';
+import { Video } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
+
+function LoginHeader() {
+    return (
+        <header className="absolute top-0 left-0 right-0 z-50">
+            <div className="container mx-auto flex items-center justify-between p-4 text-foreground">
+                <Link href="/" className="flex items-center gap-2">
+                    <Video className="h-7 w-7 text-primary" />
+                    <span className="text-2xl font-bold">Unio</span>
+                </Link>
+                <div className="flex items-center gap-2">
+                    <ThemeToggle />
+                    <Button asChild variant="secondary">
+                        <Link href="/register">Crear Cuenta</Link>
+                    </Button>
+                </div>
+            </div>
+        </header>
+    );
+}
+
 
 export default function LoginPage() {
   const router = useRouter();
@@ -45,7 +68,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-background p-4">
+      <LoginHeader />
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Admin Login</CardTitle>
