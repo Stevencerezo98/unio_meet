@@ -18,9 +18,14 @@ import { usePWA } from '@/hooks/usePWA';
 
 const InstallableLink = ({ item, isMenuItem }: { item: LinkType, isMenuItem?: boolean }) => {
     const { canInstall, install } = usePWA();
+
     if (item.url === '#install-pwa' && canInstall) {
+        const style = isMenuItem 
+            ? { all: 'unset' as 'unset', cursor: 'pointer' }
+            : { cursor: 'pointer' };
+        
         return (
-             <button onClick={install} className={`w-full text-left transition-colors ${isMenuItem ? '' : 'hover:text-primary'}`}>
+             <button onClick={install} style={style} className={`w-full text-left transition-colors ${isMenuItem ? '' : 'hover:text-primary'}`}>
                 {item.text}
             </button>
         )
@@ -29,29 +34,27 @@ const InstallableLink = ({ item, isMenuItem }: { item: LinkType, isMenuItem?: bo
 }
 
 const NavItem = ({ item }: { item: NavItemType }) => {
-  if (item.items) {
-    return <DropdownNavItem label={item.text}>{item.items.map((subItem, index) => (
-        <DropdownMenuItem key={index} asChild>
-            <InstallableLink item={subItem} isMenuItem />
-        </DropdownMenuItem>
-    ))}</DropdownNavItem>;
+  if (item.items && item.items.length > 0) {
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <div className="flex items-center gap-1 cursor-pointer transition-colors hover:text-primary">
+                    <span>{item.text}</span>
+                    <ChevronDown className="h-4 w-4" />
+                </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56">
+                {item.items.map((subItem, index) => (
+                    <DropdownMenuItem key={index} asChild>
+                        <InstallableLink item={subItem} isMenuItem />
+                    </DropdownMenuItem>
+                ))}
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
   }
   return <InstallableLink item={item} />;
 };
-
-const DropdownNavItem = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <DropdownMenu>
-    <DropdownMenuTrigger asChild>
-      <div className="flex items-center gap-1 cursor-pointer transition-colors hover:text-primary">
-        <span>{label}</span>
-        <ChevronDown className="h-4 w-4" />
-      </div>
-    </DropdownMenuTrigger>
-    <DropdownMenuContent className="w-56">
-      {children}
-    </DropdownMenuContent>
-  </DropdownMenu>
-);
 
 export default function Header({ content }: { content: HeaderContent | null }) {
   
