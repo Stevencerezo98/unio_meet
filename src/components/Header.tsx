@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -11,22 +12,31 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { HeaderContent, NavItem as NavItemType } from '@/lib/landing-content';
+import type { HeaderContent, NavItem as NavItemType, Link as LinkType } from '@/lib/landing-content';
 import { ThemeToggle } from './ThemeToggle';
+import { usePWA } from '@/hooks/usePWA';
+
+const InstallableLink = ({ item, isMenuItem }: { item: LinkType, isMenuItem?: boolean }) => {
+    const { canInstall, install } = usePWA();
+    if (item.url === '#install-pwa' && canInstall) {
+        return (
+             <button onClick={install} className={`w-full text-left transition-colors ${isMenuItem ? '' : 'hover:text-primary'}`}>
+                {item.text}
+            </button>
+        )
+    }
+    return <Link href={item.url} className={isMenuItem ? undefined : "transition-colors hover:text-primary"}>{item.text}</Link>
+}
 
 const NavItem = ({ item }: { item: NavItemType }) => {
   if (item.items) {
     return <DropdownNavItem label={item.text}>{item.items.map((subItem, index) => (
         <DropdownMenuItem key={index} asChild>
-            <Link href={subItem.url}>{subItem.text}</Link>
+            <InstallableLink item={subItem} isMenuItem />
         </DropdownMenuItem>
     ))}</DropdownNavItem>;
   }
-  return (
-    <Link href={item.url || '#'} className="transition-colors hover:text-primary">
-      {item.text}
-    </Link>
-  );
+  return <InstallableLink item={item} />;
 };
 
 const DropdownNavItem = ({ label, children }: { label: string; children: React.ReactNode }) => (

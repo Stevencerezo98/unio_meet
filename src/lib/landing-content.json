@@ -22,14 +22,14 @@
           { "text": "Blog", "url": "#" },
           { "text": "Centro de Soporte", "url": "#" },
           { "text": "Tutoriales en Video", "url": "#" },
-          { "text": "Descargar la App", "url": "#" }
+          { "text": "Descargar la App", "url": "#install-pwa" }
         ]
       },
       { "text": "Contactar a Ventas", "url": "#" }
     ],
     "ctaPrimary": {
       "text": "Crear Cuenta Gratis",
-      "url": "#"
+      "url": "/register"
     },
     "ctaSecondary": {
       "text": "Iniciar Sesión",
@@ -91,7 +91,7 @@
           { "text": "Blog", "url": "#" },
           { "text": "Centro de Soporte", "url": "#" },
           { "text": "Tutoriales en Video", "url": "#" },
-          { "text": "Descargar la App", "url": "#" }
+          { "text": "Descargar la App", "url": "#install-pwa" }
         ]
       },
       {

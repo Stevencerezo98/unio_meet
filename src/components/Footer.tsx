@@ -4,7 +4,21 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Video, Facebook, Instagram } from 'lucide-react';
-import type { FooterContent, HeaderContent } from '@/lib/landing-content';
+import type { FooterContent, HeaderContent, Link as LinkType } from '@/lib/landing-content';
+import { usePWA } from '@/hooks/usePWA';
+
+
+const InstallableFooterLink = ({ link }: { link: LinkType }) => {
+    const { canInstall, install } = usePWA();
+    if (link.url === '#install-pwa' && canInstall) {
+        return (
+            <button onClick={install} className="text-sm text-muted-foreground transition-colors hover:text-foreground text-left">
+                {link.text}
+            </button>
+        )
+    }
+    return <FooterLink href={link.url}>{link.text}</FooterLink>
+}
 
 const FooterLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
   <Link href={href} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
@@ -71,7 +85,7 @@ export default function Footer({ content }: { content: FooterContent | null }) {
               <h4 className="font-semibold text-foreground">{column.title}</h4>
               <div className="flex flex-col space-y-2">
                 {column.links.map((link, linkIndex) => (
-                  <FooterLink key={linkIndex} href={link.url}>{link.text}</FooterLink>
+                  <InstallableFooterLink key={linkIndex} link={link} />
                 ))}
               </div>
             </div>
