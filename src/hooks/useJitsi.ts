@@ -67,7 +67,7 @@ export function useJitsi({
         BRAND_WATERMARK_LINK: 'https://iglesia.unio.my',
         DEFAULT_REMOTE_DISPLAY_NAME: 'Fellow Unio User',
         JITSI_WATERMARK_LINK: 'https://iglesia.unio.my',
-        TOOLBAR_BUTTONS: [],
+        TOOLBAR_BUTTONS: ['reactions'],
         SETTINGS_SECTIONS: ['devices', 'language', 'profile', 'moderator'],
         SHOW_JITSI_WATERMARK: false,
         SHOW_WATERMARK_FOR_GUESTS: false,
@@ -77,6 +77,9 @@ export function useJitsi({
         TILE_VIEW_MAX_COLUMNS: 5,
         TOOLBAR_ALWAYS_VISIBLE: false,
         DISABLE_VIDEO_BACKGROUND: false,
+        css: `
+          .reactions-menu-container { display: none !important; }
+        `
       },
       onload: () => {
         setApiReady(true);
@@ -91,17 +94,20 @@ export function useJitsi({
         const allParticipants = jitsiApi.getParticipantsInfo();
         const newParticipantsMap = new Map<string, JitsiParticipant>();
 
-        const localParticipantInfo = allParticipants.find(p => p.local);
-        
-        if (localParticipantInfo) {
-            newParticipantsMap.set(localParticipantInfo.id, {
-                ...localParticipantInfo,
-                displayName: jitsiApi.getDisplayName(localParticipantInfo.id) || 'Me',
-            });
+        const localId = allParticipants.find(p => p.local)?.id;
+
+        if (localId) {
+             const localParticipant = jitsiApi.getParticipantsInfo().find(p => p.id === localId);
+             if(localParticipant) {
+                newParticipantsMap.set(localParticipant.id, {
+                    ...localParticipant,
+                    displayName: jitsiApi.getDisplayName(localParticipant.id) || 'Me',
+                });
+             }
         }
         
         allParticipants.forEach(p => {
-            if (!p.local) {
+            if (!p.local && !newParticipantsMap.has(p.id)) {
                  newParticipantsMap.set(p.id, {
                     ...p,
                     displayName: p.displayName || 'Guest'
@@ -140,8 +146,7 @@ export function useJitsi({
         jitsiApi.dispose();
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parentNode, roomName, domain, startWithAudioMuted, startWithVideoMuted, displayName]);
+  }, [roomName, domain, parentNode, startWithAudioMuted, startWithVideoMuted, displayName]);
   
   const toggleAudio = useCallback(() => api?.executeCommand('toggleAudio'), [api]);
   const toggleVideo = useCallback(() => api?.executeCommand('toggleVideo'), [api]);
