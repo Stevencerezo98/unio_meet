@@ -7,12 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import {
-  adjectives,
-  animals,
-  uniqueNamesGenerator,
-} from 'unique-names-generator';
 import { Video } from 'lucide-react';
+import Header from '@/components/Header';
 
 export default function Home() {
   const [roomName, setRoomName] = useState('');
@@ -26,17 +22,13 @@ export default function Home() {
   };
 
   const handleInstantMeeting = () => {
-    const randomName: string = uniqueNamesGenerator({
-      dictionaries: [adjectives, animals],
-      separator: '-',
-      length: 2,
-    });
-    const generatedRoomName = `${randomName}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const generatedRoomName = Math.floor(Math.random() * 10000000000).toString().padStart(10, '0');
     router.push(`/meeting/${encodeURIComponent(generatedRoomName)}`);
   };
 
   return (
     <div className="relative min-h-screen w-full bg-background text-foreground">
+      <Header />
       {/* Aurora Background */}
       <div className="absolute top-0 left-0 right-0 bottom-0 overflow-hidden -z-10">
         <div className="absolute top-1/2 left-1/2 w-[800px] h-[800px] bg-primary/20 rounded-full filter blur-[200px] -translate-x-1/2 -translate-y-1/2 opacity-50 animate-pulse" />
