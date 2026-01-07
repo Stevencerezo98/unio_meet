@@ -1,0 +1,129 @@
+/**
+ * This ruleset enforces a strict user-ownership model for the Unio Premium video platform.
+ * The core philosophy is that users have complete control over their own data and the
+ * resources they create, ensuring a high degree of privacy and security by default.
+ *
+ * Data Structure:
+ * The data is organized into two separate top-level collections:
+ * - /users/{userId}: Stores individual user profile data.
+ * - /meetingRooms/{meetingRoomId}: Stores configurations for video meeting rooms.
+ * This separation (Structural Segregation) simplifies rules and improves query performance.
+ *
+ * Key Security Decisions:
+ * - User Isolation: A user can only access their own document within the `/users` collection.
+ *   Listing or reading other user profiles is explicitly disallowed to prevent data scraping.
+ * - Ownership-Based Access: All meeting rooms have a denormalized `ownerId` field. All
+ *   permissions (read, write, delete) for a meeting room are granted exclusively to the
+ *   user identified in this field.
+ * - Secure Listing: Listing meeting rooms is only permitted if the query is explicitly
+ *   filtered to show only the rooms owned by the currently authenticated user. This prevents
+ *   any user from listing all rooms in the system.
+ * - Default Deny: Any operation not explicitly permitted is denied.
+ *
+ * Denormalization for Authorization:
+ * To ensure fast and simple authorization, the `ownerId` is stored directly on each
+ * `MeetingRoom` document. This avoids slow and costly `get()` calls to other documents
+ * to verify ownership, making the rules more performant and easier to maintain.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ----------------------------------------------------------------------
+    // Helper Functions
+    // ----------------------------------------------------------------------
+
+    /**
+     * Checks if the user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the authenticated user's UID matches the provided userId.
+     * This is the primary function for verifying document ownership.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Verifies that a document already exists. Used in update/delete rules.
+     */
+    function isExistingDoc() {
+      return resource != null;
+    }
+
+    /**
+     * Combines ownership check with an existence check for state-changing operations.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && isExistingDoc();
+    }
+
+    /**
+     * On create, validates that the user profile's internal ID matches its path ID.
+     * This establishes an immutable link between the document and its owner.
+     */
+    function hasValidUserProfileDataOnCreate(userId) {
+      return request.resource.data.id == userId;
+    }
+
+    /**
+     * On update, ensures the ownership link (the 'id' field) cannot be changed.
+     */
+    function userProfileIsImmutable() {
+      return request.resource.data.id == resource.data.id;
+    }
+
+    /**
+     * On create, validates that the new meeting room's ownerId is the creator.
+     */
+    function hasValidMeetingRoomDataOnCreate() {
+      return request.resource.data.ownerId == request.auth.uid;
+    }
+
+    /**
+     * On update, ensures the meeting room's ownerId cannot be changed.
+     */
+    function meetingRoomIsImmutable() {
+      return request.resource.data.ownerId == resource.data.ownerId;
+    }
+
+
+    // ----------------------------------------------------------------------
+    // Collection Rules
+    // ----------------------------------------------------------------------
+
+    /**
+     * @description Manages user profile documents.
+     * @path /users/{userId}
+     * @allow (create) An authenticated user creating their own user profile document.
+     * @deny (get) A user trying to read another user's profile.
+     * @principle Restricts access to a user's own data tree.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && hasValidUserProfileDataOnCreate(userId);
+      allow update: if isExistingOwner(userId) && userProfileIsImmutable();
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Manages meeting room configurations.
+     * @path /meetingRooms/{meetingRoomId}
+     * @allow (create) An authenticated user creating a meeting room for themself.
+     * @deny (update) A user trying to modify a meeting room they do not own.
+     * @principle Enforces document ownership for all reads and writes via a denormalized `ownerId` field.
+     */
+    match /meetingRooms/{meetingRoomId} {
+      allow get: if isOwner(resource.data.ownerId);
+      allow list: if isSignedIn() && request.query.ownerId == request.auth.uid;
+      allow create: if isSignedIn() && hasValidMeetingRoomDataOnCreate();
+      allow update: if isOwner(resource.data.ownerId) && meetingRoomIsImmutable();
+      allow delete: if isOwner(resource.data.ownerId);
+    }
+  }
+}

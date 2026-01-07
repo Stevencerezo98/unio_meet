@@ -1,0 +1,117 @@
+{
+  "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents a user profile within the Unio Premium video platform, storing customizable user information.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserProfile entity."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The user's display name in the Unio video platform."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        },
+        "profilePictureUrl": {
+          "type": "string",
+          "description": "URL of the user's profile picture.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "displayName"
+      ]
+    },
+    "MeetingRoom": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MeetingRoom",
+      "type": "object",
+      "description": "Represents a meeting room configuration within the Unio Premium video platform.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the MeetingRoom entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the meeting room."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the meeting room's purpose or topic."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "The date and time the meeting room was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "The date and time the meeting room was last updated.",
+          "format": "date-time"
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "Reference to UserProfile. The user who created the meeting room. (Relationship: UserProfile 1:N MeetingRoom)"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "createdAt",
+        "ownerId"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user profile information. Path-based ownership is enforced via the 'userId' path parameter.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user.  Corresponds to the Firebase Authentication UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/meetingRooms/{meetingRoomId}",
+        "definition": {
+          "entityName": "MeetingRoom",
+          "schema": {
+            "$ref": "#/backend/entities/MeetingRoom"
+          },
+          "description": "Stores meeting room configurations. Includes the 'ownerId' field which is used to control access based on user ownership. The ownerId attribute allows enforcing simple security rules without relying on parent document reads.",
+          "params": [
+            {
+              "name": "meetingRoomId",
+              "description": "The unique identifier of the meeting room."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to manage user profiles and meeting rooms within the Unio Premium video platform.  It prioritizes Authorization Independence by ensuring that access control information is directly associated with each document, avoiding the need for complex hierarchical `get()` calls in security rules. This is achieved through path-based ownership and denormalization. The structure also facilitates QAPs through structural segregation by storing user profiles and meeting rooms in separate collections with appropriate security constraints.\n\nSpecifically, `UserProfile` data is stored under `/users/{userId}` ensuring path-based ownership. `MeetingRoom` documents are stored under `/meetingRooms/{meetingRoomId}` with the `ownerId` field denormalized, enabling simple, robust security rules based on `request.auth.uid` and the `ownerId`.\n"
+  }
+}
