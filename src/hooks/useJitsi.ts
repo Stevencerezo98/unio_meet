@@ -33,6 +33,42 @@ export function useJitsi({
   const memoizedInterfaceConfig = useMemo(() => JSON.stringify(interfaceConfigOverwrite), [interfaceConfigOverwrite]);
   const memoizedUserInfo = useMemo(() => JSON.stringify(userInfo), [userInfo]);
 
+  const updateParticipants = useCallback((jitsiApi: JitsiApi) => {
+    if (!jitsiApi) return;
+  
+    const remoteParticipants = jitsiApi.getParticipantsInfo();
+    
+    // The local participant object from the API might be incomplete initially
+    const localId = jitsiApi.getDisplayName('local') ? 'local' : (remoteParticipants.find(p => p.formattedDisplayName.endsWith('(me)'))?.id || 'local');
+
+    const localParticipant = {
+      id: localId,
+      displayName: userInfo?.displayName || 'You',
+      avatarURL: jitsiApi.getAvatarURL?.(localId),
+      role: 'moderator',
+      formattedDisplayName: `${userInfo?.displayName || 'You'} (you)`,
+    };
+  
+    const participantMap = new Map<string, JitsiParticipant>();
+
+    // Add local participant first to ensure it's in the list
+    if(localId) {
+        participantMap.set(localId, localParticipant);
+    }
+  
+    // Add remote participants, overwriting any incomplete local participant info
+    // that might have come from the remote list.
+    remoteParticipants.forEach(p => {
+        // Exclude the placeholder for the local user that Jitsi sometimes provides
+        if (!p.formattedDisplayName.endsWith('(me)')) {
+            participantMap.set(p.id, p);
+        }
+    });
+
+    setParticipants(Array.from(participantMap.values()));
+  }, [userInfo?.displayName]);
+
+
   useEffect(() => {
     if (typeof window === 'undefined' || !window.JitsiMeetExternalAPI || !parentNode.current) {
       return;
@@ -50,44 +86,15 @@ export function useJitsi({
 
     setApi(jitsiApi);
 
-    const updateParticipants = () => {
-      if (!jitsiApi) return;
-      const remoteParticipants = jitsiApi.getParticipantsInfo();
-      const localParticipant = jitsiApi.getAvatarURL && {
-        id: 'local',
-        displayName: userInfo?.displayName || 'You',
-        avatarURL: jitsiApi.getAvatarURL('local'),
-        role: 'moderator',
-        formattedDisplayName: `${userInfo?.displayName || 'You'} (you)`,
-      };
-      
-      const allParticipants = localParticipant ? [localParticipant, ...remoteParticipants] : remoteParticipants;
-      
-      const uniqueParticipants = allParticipants.filter(
-        (participant, index, self) =>
-          index === self.findIndex((p) => p.id === participant.id)
-      );
-
-      setParticipants(uniqueParticipants);
-    };
-
     const handleVideoConferenceJoined = () => {
       jitsiApi.isAudioMuted().then(setAudioMuted);
       jitsiApi.isVideoMuted().then(setVideoMuted);
-      updateParticipants();
+      updateParticipants(jitsiApi);
     };
 
-    const handleParticipantJoined = (participant: any) => {
-      updateParticipants();
+    const handleParticipantEvent = () => {
+        updateParticipants(jitsiApi);
     };
-
-    const handleParticipantLeft = (participant: any) => {
-      updateParticipants();
-    };
-    
-    const handleParticipantUpdated = () => {
-        updateParticipants();
-    }
 
     const handleAudioMuteStatusChanged = (payload: { muted: boolean }) => {
       setAudioMuted(payload.muted);
@@ -106,11 +113,12 @@ export function useJitsi({
     };
     
     jitsiApi.on('videoConferenceJoined', handleVideoConferenceJoined);
-    jitsiApi.on('participantJoined', handleParticipantJoined);
-    jitsiApi.on('participantLeft', handleParticipantLeft);
-    jitsiApi.on('participantKickedOut', handleParticipantLeft);
-    jitsiApi.on('displayNameChange', handleParticipantUpdated);
-    jitsiApi.on('avatarChanged', handleParticipantUpdated);
+    jitsiApi.on('participantJoined', handleParticipantEvent);
+    jitsiApi.on('participantLeft', handleParticipantEvent);
+    jitsiApi.on('participantKickedOut', handleParticipantEvent);
+    jitsiApi.on('displayNameChange', handleParticipantEvent);
+    jitsiApi.on('avatarChanged', handleParticipantEvent);
+    jitsiApi.on('participantRoleChanged', handleParticipantEvent);
 
     jitsiApi.on('audioMuteStatusChanged', handleAudioMuteStatusChanged);
     jitsiApi.on('videoMuteStatusChanged', handleVideoMuteStatusChanged);
@@ -118,12 +126,11 @@ export function useJitsi({
     jitsiApi.on('screenSharingStatusChanged', handleScreenSharingStatusChanged);
 
     return () => {
-        if(api) {
-            api.dispose();
-            setApi(null);
-        }
+        jitsiApi.dispose();
+        setApi(null);
     };
-  }, [parentNode, roomName, domain, memoizedUserInfo, memoizedConfig, memoizedInterfaceConfig]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [parentNode, roomName, domain, memoizedUserInfo, memoizedConfig, memoizedInterfaceConfig, updateParticipants]);
 
   const toggleAudio = useCallback(() => {
     api?.executeCommand('toggleAudio');
