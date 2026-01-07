@@ -1,13 +1,22 @@
 'use client';
 
 import Link from 'next/link';
-import { Video, Twitter, Linkedin, Facebook } from 'lucide-react';
+import { Video, Facebook, Instagram, MessageCircle } from 'lucide-react';
 
 const FooterLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
   <Link href={href} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
     {children}
   </Link>
 );
+
+// Custom TikTok Icon as it's not in lucide-react
+const TikTokIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+      <path d="M12.52.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.65 4.31 1.7.03 1.31-.01 2.61-.02 3.91-.19.01-.38.02-.57.02-1.55.01-3.1-.48-4.36-1.5-1.25-1.02-1.95-2.5-1.95-4.04 0-.19.01-.38.02-.57z"/>
+      <path d="M10 15.25a5.25 5.25 0 0 0 5.25 5.25V23a8 8 0 0 1-8-8V8.75A5.25 5.25 0 0 0 2 3.5H4.75v11.75c0 .14.01.27.04.4.15 1.63 1.5 3.01 3.15 3.15.13.03.26.04.4.04z"/>
+    </svg>
+);
+
 
 export default function Footer() {
   return (
@@ -24,9 +33,10 @@ export default function Footer() {
               Reuniones privadas, sin fronteras. Videollamadas simples y seguras.
             </p>
             <div className="flex items-center gap-4 pt-2">
-              <Link href="#" className="text-muted-foreground hover:text-foreground"><Twitter className="h-5 w-5"/></Link>
-              <Link href="#" className="text-muted-foreground hover:text-foreground"><Linkedin className="h-5 w-5"/></Link>
               <Link href="#" className="text-muted-foreground hover:text-foreground"><Facebook className="h-5 w-5"/></Link>
+              <Link href="#" className="text-muted-foreground hover:text-foreground"><Instagram className="h-5 w-5"/></Link>
+              <Link href="#" className="text-muted-foreground hover:text-foreground"><TikTokIcon /></Link>
+              <Link href="#" className="text-muted-foreground hover:text-foreground"><MessageCircle className="h-5 w-5"/></Link>
           </div>
           </div>
 
