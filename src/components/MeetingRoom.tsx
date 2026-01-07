@@ -11,10 +11,12 @@ interface MeetingRoomProps {
     roomName: string;
 }
 
-export default function MeetingRoom({ roomName }: MeetingRoomProps) {
+export default function MeetingRoom({ roomName: encodedRoomName }: MeetingRoomProps) {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const jitsiContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  const roomName = decodeURIComponent(encodedRoomName);
 
   const onMeetingEnd = () => {
     router.push('/thank-you');
