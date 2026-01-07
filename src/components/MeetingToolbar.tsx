@@ -35,22 +35,26 @@ const ToolbarButton = ({
   label,
   children,
   isActive = false,
-  variant = 'secondary',
+  variant,
 }: {
   onClick: () => void;
   label: string;
   children: React.ReactNode;
   isActive?: boolean;
-  variant?: 'secondary' | 'destructive';
+  variant?: 'destructive';
 }) => (
   <Tooltip>
     <TooltipTrigger asChild>
       <Button
-        variant={variant === 'destructive' ? 'destructive' : 'secondary'}
+        variant={variant}
         size="icon"
         onClick={onClick}
         className={`rounded-full h-14 w-14 transition-colors duration-300 ${
-          isActive ? 'bg-primary/80 hover:bg-primary' : 'bg-black/40 hover:bg-black/60'
+          isActive
+            ? 'bg-primary/80 hover:bg-primary text-primary-foreground'
+            : variant === 'destructive'
+            ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
+            : 'bg-black/40 hover:bg-black/60 text-white'
         }`}
       >
         {children}
