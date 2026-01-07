@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { JitsiApi, JitsiParticipant } from '@/lib/types';
+import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator';
 
 interface UseJitsiProps {
   roomName: string;
@@ -34,12 +35,22 @@ export function useJitsi({
     if (typeof window === 'undefined' || !window.JitsiMeetExternalAPI || !parentNode.current || api) {
       return;
     }
+    
+    const decodedRoomName = decodeURIComponent(roomName);
+    const randomName = uniqueNamesGenerator({
+        dictionaries: [adjectives, colors, animals],
+        separator: ' ',
+        style: 'capital',
+    });
 
     const jitsiApi = new window.JitsiMeetExternalAPI(domain, {
-      roomName,
+      roomName: decodedRoomName,
       parentNode: parentNode.current,
       width: '100%',
       height: '100%',
+      userInfo: {
+          displayName: randomName
+      },
       configOverwrite: {
         startWithAudioMuted: true,
         startWithVideoMuted: true,
@@ -73,29 +84,34 @@ export function useJitsi({
     const updateParticipants = () => {
       if (!jitsiApi) return;
       const jitsiParticipants = jitsiApi.getParticipantsInfo();
+      const localParticipant = jitsiApi.getParticipantsInfo().find(p => p.local);
+      
       const participantMap = new Map<string, JitsiParticipant>();
 
-      // Add all participants to the map, overwriting duplicates.
-      // This ensures the list is always unique.
+      if (localParticipant) {
+          participantMap.set(localParticipant.id, {
+              ...localParticipant,
+              displayName: localParticipant.displayName || 'Me',
+          });
+      }
+
       jitsiParticipants.forEach(p => {
-        participantMap.set(p.id, {
-            ...p,
-            displayName: p.local ? (p.displayName || 'Me') : (p.displayName || 'Guest'),
-        });
+        if (!p.local) {
+            participantMap.set(p.id, {
+                ...p,
+                displayName: p.displayName || 'Guest',
+            });
+        }
       });
       
       setParticipants(Array.from(participantMap.values()));
     }
 
-    jitsiApi.on('videoConferenceJoined', (localUser: { id: string, displayName: string }) => {
+    jitsiApi.on('videoConferenceJoined', () => {
       setIsJoined(true);
       jitsiApi.isAudioMuted().then(setAudioMuted);
       jitsiApi.isVideoMuted().then(setVideoMuted);
-      
-      // Initial participant update
       updateParticipants();
-
-      jitsiApi.executeCommand('setDisplayName', localUser.displayName);
     });
 
     jitsiApi.on('readyToClose', () => {

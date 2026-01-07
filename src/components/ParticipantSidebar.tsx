@@ -35,8 +35,8 @@ export default function ParticipantSidebar({
         </header>
         <ScrollArea className="flex-1">
           <ul className="p-4 space-y-3">
-            {participants.map((p) => (
-              <li key={p.id} className="flex items-center gap-3">
+            {participants.map((p, index) => (
+              <li key={p.id || index} className="flex items-center gap-3">
                 <Avatar>
                   <AvatarImage src={p.avatarURL} alt={p.displayName} />
                   <AvatarFallback>

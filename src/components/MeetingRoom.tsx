@@ -11,19 +11,17 @@ interface MeetingRoomProps {
     roomName: string;
 }
 
-export default function MeetingRoom({ roomName: encodedRoomName }: MeetingRoomProps) {
+export default function MeetingRoom({ roomName }: MeetingRoomProps) {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const jitsiContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-
-  const roomName = decodeURIComponent(encodedRoomName);
 
   const onMeetingEnd = () => {
     router.push('/thank-you');
   };
 
   const { isApiReady, isJoined, participants, controls } = useJitsi({
-    roomName,
+    roomName: roomName,
     parentNode: jitsiContainerRef,
     onMeetingEnd,
   });
@@ -44,7 +42,7 @@ export default function MeetingRoom({ roomName: encodedRoomName }: MeetingRoomPr
             </div>
         )}
 
-        {isJoined && (
+        {isApiReady && isJoined && (
           <>
             <MeetingToolbar
               isAudioMuted={controls.isAudioMuted}

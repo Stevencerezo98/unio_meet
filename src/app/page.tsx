@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import {
   adjectives,
   animals,
+  colors,
   uniqueNamesGenerator,
 } from 'unique-names-generator';
 
