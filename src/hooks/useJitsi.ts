@@ -89,20 +89,21 @@ export function useJitsi({
         if (!jitsiApi) return;
         
         const allParticipantsInfo = jitsiApi.getParticipantsInfo();
-        const localParticipant = allParticipantsInfo.find(p => p.local);
-        
         const newParticipantsMap = new Map<string, JitsiParticipant>();
 
-        if (localParticipant) {
-             newParticipantsMap.set(localParticipant.id, {
-                ...localParticipant,
-                displayName: jitsiApi.getDisplayName(localParticipant.id) || 'Me',
+        // Ensure local participant is added correctly and only once.
+        const localInfo = allParticipantsInfo.find(p => p.local);
+        if (localInfo) {
+            newParticipantsMap.set(localInfo.id, {
+                ...localInfo,
+                displayName: jitsiApi.getDisplayName(localInfo.id) || 'Me',
             });
         }
 
-        jitsiApi.getParticipantsInfo().forEach(p => {
+        // Add remote participants, ensuring no duplicates.
+        allParticipantsInfo.forEach(p => {
             if (!p.local && !newParticipantsMap.has(p.id)) {
-                newParticipantsMap.set(p.id, {
+                 newParticipantsMap.set(p.id, {
                     ...p,
                     displayName: p.displayName || 'Guest'
                 });
@@ -113,7 +114,7 @@ export function useJitsi({
     }
 
 
-    jitsiApi.on('videoConferenceJoined', (localUser: {id: string}) => {
+    jitsiApi.on('videoConferenceJoined', () => {
       setIsJoined(true);
       jitsiApi.isAudioMuted().then(setAudioMuted);
       jitsiApi.isVideoMuted().then(setVideoMuted);
