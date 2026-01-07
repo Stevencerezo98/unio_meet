@@ -37,7 +37,8 @@
     }
   },
   "hero": {
-    "title": "Reuniones privadas, sin fronteras",
+    "titlePart1": "Reuniones privadas,",
+    "titlePart2": "sin fronteras",
     "subtitle": "Videollamadas simples y seguras, alojadas en nuestra propia infraestructura para máxima privacidad. Sin registros, sin rastreo.",
     "ctaPrimary": "Iniciar Reunión Instantánea",
     "ctaSecondary": "Agendar para después",
@@ -108,5 +109,10 @@
       { "text": "Política de Privacidad", "url": "#" }
     ],
     "copyright": "© {year} Unio, Inc. Todos los derechos reservados."
+  },
+  "thankYou": {
+    "title": "Reunión Finalizada",
+    "description": "Gracias por usar Unio Premium Video Platform. Has abandonado la reunión exitosamente.",
+    "buttonText": "Volver a la Página Principal"
   }
 }

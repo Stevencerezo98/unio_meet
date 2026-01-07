@@ -65,7 +65,8 @@ const landingContentSchema = z.object({
     ctaSecondary: linkSchema,
   }),
   hero: z.object({
-    title: z.string().min(1, 'Hero title is required'),
+    titlePart1: z.string().min(1, 'Hero title part 1 is required'),
+    titlePart2: z.string().min(1, 'Hero title part 2 is required'),
     subtitle: z.string().min(1, 'Hero subtitle is required'),
     ctaPrimary: z.string().min(1, 'Primary CTA is required'),
     ctaSecondary: z.string().min(1, 'Secondary CTA is required'),
@@ -89,6 +90,11 @@ const landingContentSchema = z.object({
     ),
     legalLinks: z.array(linkSchema),
     copyright: z.string().min(1, 'Copyright text is required'),
+  }),
+  thankYou: z.object({
+    title: z.string().min(1, 'Title is required'),
+    description: z.string().min(1, 'Description is required'),
+    buttonText: z.string().min(1, 'Button text is required'),
   }),
 });
 
@@ -171,7 +177,7 @@ export function AdminForm({ content }: AdminFormProps) {
   return (
     <FormProvider {...formMethods}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        <Accordion type="multiple" defaultValue={['header', 'hero', 'features', 'footer']} className="w-full">
+        <Accordion type="multiple" defaultValue={['header', 'hero', 'features', 'footer', 'thankYou']} className="w-full">
           {/* Header Section */}
           <AccordionItem value="header">
             <AccordionTrigger className="text-xl font-bold">Header Section</AccordionTrigger>
@@ -264,9 +270,14 @@ export function AdminForm({ content }: AdminFormProps) {
               <Card className="border-none">
                 <CardContent className="pt-6 space-y-4">
                   <div>
-                    <Label htmlFor="hero.title">Title</Label>
-                    <Input id="hero.title" {...register('hero.title')} />
-                    {errors.hero?.title && <p className="text-destructive text-sm mt-1">{errors.hero.title.message}</p>}
+                    <Label htmlFor="hero.titlePart1">Title (Normal Text)</Label>
+                    <Input id="hero.titlePart1" {...register('hero.titlePart1')} />
+                    {errors.hero?.titlePart1 && <p className="text-destructive text-sm mt-1">{errors.hero.titlePart1.message}</p>}
+                  </div>
+                  <div>
+                    <Label htmlFor="hero.titlePart2">Title (Gradient Text)</Label>
+                    <Input id="hero.titlePart2" {...register('hero.titlePart2')} />
+                    {errors.hero?.titlePart2 && <p className="text-destructive text-sm mt-1">{errors.hero.titlePart2.message}</p>}
                   </div>
                   <div>
                     <Label htmlFor="hero.subtitle">Subtitle</Label>
@@ -452,9 +463,34 @@ export function AdminForm({ content }: AdminFormProps) {
                                 <p className="text-xs text-muted-foreground mt-1">Use {'{year}'} to automatically insert the current year.</p>
                             </div>
                         </div>
-
                     </CardContent>
                 </Card>
+            </AccordionContent>
+          </AccordionItem>
+
+           {/* Thank You Page Section */}
+          <AccordionItem value="thankYou">
+            <AccordionTrigger className="text-xl font-bold">Thank You Page</AccordionTrigger>
+            <AccordionContent>
+              <Card className="border-none">
+                <CardContent className="pt-6 space-y-4">
+                  <div>
+                    <Label htmlFor="thankYou.title">Title</Label>
+                    <Input id="thankYou.title" {...register('thankYou.title')} />
+                    {errors.thankYou?.title && <p className="text-destructive text-sm mt-1">{errors.thankYou.title.message}</p>}
+                  </div>
+                  <div>
+                    <Label htmlFor="thankYou.description">Description</Label>
+                    <Textarea id="thankYou.description" {...register('thankYou.description')} />
+                    {errors.thankYou?.description && <p className="text-destructive text-sm mt-1">{errors.thankYou.description.message}</p>}
+                  </div>
+                   <div>
+                    <Label htmlFor="thankYou.buttonText">Button Text</Label>
+                    <Input id="thankYou.buttonText" {...register('thankYou.buttonText')} />
+                    {errors.thankYou?.buttonText && <p className="text-destructive text-sm mt-1">{errors.thankYou.buttonText.message}</p>}
+                  </div>
+                </CardContent>
+              </Card>
             </AccordionContent>
           </AccordionItem>
         </Accordion>

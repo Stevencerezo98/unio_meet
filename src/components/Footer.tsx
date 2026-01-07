@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -40,39 +41,33 @@ const SocialIcon = ({ iconName, href }: { iconName: string; href: string }) => {
 };
 
 
-export default function Footer({ headerContent, footerContent }: { headerContent: HeaderContent | null, footerContent: FooterContent | null }) {
-  if (!footerContent || !headerContent) {
+export default function Footer({ content }: { content: FooterContent | null }) {
+  if (!content) {
     return <footer className="border-t border-border bg-background/50" />;
   }
 
   return (
     <footer className="border-t border-border bg-background/50">
       <div className="container mx-auto py-12 px-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
           
-          <div className="space-y-3 col-span-2 md:col-span-1">
+          <div className="space-y-3 col-span-2 md:col-span-4 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2">
-                {headerContent.logo.type === 'image' ? (
-                    <Image src={headerContent.logo.value} alt="Logo" width={120} height={30} className="h-7 w-auto" />
-                ) : (
-                    <>
-                        <Video className="h-6 w-6 text-primary" />
-                        <span className="text-lg font-bold">{footerContent.brandName}</span>
-                    </>
-                )}
+              <Video className="h-6 w-6 text-primary" />
+              <span className="text-lg font-bold">{content.brandName}</span>
             </Link>
-            <p className="text-muted-foreground text-sm">
-              {footerContent.brandDescription}
+            <p className="text-muted-foreground text-sm max-w-xs">
+              {content.brandDescription}
             </p>
             <div className="flex items-center gap-4 pt-2">
-              {footerContent.socialLinks.map((social) => (
+              {content.socialLinks.map((social) => (
                 <SocialIcon key={social.name} iconName={social.name} href={social.url} />
               ))}
             </div>
           </div>
 
-          {footerContent.linkColumns.map((column, index) => (
-             <div key={index} className="space-y-3">
+          {content.linkColumns.map((column, index) => (
+             <div key={index} className="space-y-3 col-span-1">
               <h4 className="font-semibold text-foreground">{column.title}</h4>
               <div className="flex flex-col space-y-2">
                 {column.links.map((link, linkIndex) => (
@@ -86,10 +81,10 @@ export default function Footer({ headerContent, footerContent }: { headerContent
 
         <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between">
           <p className="text-sm text-muted-foreground text-center sm:text-left">
-            {footerContent.copyright.replace('{year}', new Date().getFullYear().toString())}
+            {content.copyright.replace('{year}', new Date().getFullYear().toString())}
           </p>
           <div className="flex gap-4 mt-4 sm:mt-0">
-            {footerContent.legalLinks.map((link, index) => (
+            {content.legalLinks.map((link, index) => (
               <FooterLink key={index} href={link.url}>{link.text}</FooterLink>
             ))}
           </div>

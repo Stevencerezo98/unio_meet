@@ -27,7 +27,8 @@ export interface HeaderContent {
 }
 
 export interface HeroContent {
-    title: string;
+    titlePart1: string;
+    titlePart2: string;
     subtitle: string;
     ctaPrimary: string;
     ctaSecondary: string;
@@ -66,9 +67,16 @@ export interface FooterContent {
     copyright: string;
 }
 
+export interface ThankYouContent {
+    title: string;
+    description: string;
+    buttonText: string;
+}
+
 export interface LandingContent {
     header: HeaderContent;
     hero: HeroContent;
     features: FeaturesContent;
     footer: FooterContent;
+    thankYou: ThankYouContent;
 }

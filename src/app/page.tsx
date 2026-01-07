@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -68,10 +69,7 @@ export default function Home() {
   return (
     <div className="relative flex flex-col min-h-screen w-full bg-background text-foreground">
       <Header content={header} />
-      <div className="absolute top-0 left-0 right-0 bottom-0 overflow-hidden -z-10">
-         <div className="animated-gradient" />
-      </div>
-
+      
       <main className="container mx-auto flex flex-grow flex-col items-center justify-center p-4 pt-32 pb-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -86,7 +84,8 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
-              {hero.title.split(',')[0]}, <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent/80">{hero.title.split(',')[1]}</span>.
+              {hero.titlePart1}{' '}
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent-foreground/80">{hero.titlePart2}</span>
             </motion.h1>
 
             <motion.p
@@ -189,7 +188,7 @@ export default function Home() {
           </div>
         </motion.section>
       </main>
-      <Footer headerContent={header} footerContent={footer} />
+      <Footer content={footer} />
     </div>
   );
 }
