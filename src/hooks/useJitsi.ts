@@ -95,11 +95,25 @@ export function useJitsi({
     };
   }, [parentNode, roomName, domain, userInfo, configOverwrite, interfaceConfigOverwrite]);
 
-  const toggleAudio = useCallback(() => api?.executeCommand('toggleAudio'), [api]);
-  const toggleVideo = useCallback(() => api?.executeCommand('toggleVideo'), [api]);
-  const toggleTileView = useCallback(() => api?.executeCommand('toggleTileView'), [api]);
-  const toggleShareScreen = useCallback(() => api?.executeCommand('toggleShareScreen'), [api]);
-  const hangup = useCallback(() => api?.executeCommand('hangup'), [api]);
+  const toggleAudio = useCallback(() => {
+    api?.executeCommand('toggleAudio');
+  }, [api]);
+  
+  const toggleVideo = useCallback(() => {
+    api?.executeCommand('toggleVideo');
+  }, [api]);
+  
+  const toggleTileView = useCallback(() => {
+    api?.executeCommand('toggleTileView');
+  }, [api]);
+  
+  const toggleShareScreen = useCallback(() => {
+    api?.executeCommand('toggleShareScreen');
+  }, [api]);
+  
+  const hangup = useCallback(() => {
+    api?.executeCommand('hangup');
+  }, [api]);
 
   const controls = useMemo(
     () => ({
