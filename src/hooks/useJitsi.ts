@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -63,22 +64,18 @@ export function useJitsi({
         fileRecordingsEnabled: false,
       },
       interfaceConfigOverwrite: {
-        BRAND_WATERMARK_LINK: 'https://iglesia.unio.my',
-        DEFAULT_REMOTE_DISPLAY_NAME: 'Fellow Unio User',
-        JITSI_WATERMARK_LINK: 'https://iglesia.unio.my',
-        TOOLBAR_BUTTONS: ['reactions'],
-        SETTINGS_SECTIONS: ['devices', 'language', 'profile', 'moderator'],
+        BRAND_WATERMARK_LINK: '',
+        JITSI_WATERMARK_LINK: '',
         SHOW_JITSI_WATERMARK: false,
         SHOW_WATERMARK_FOR_GUESTS: false,
         SHOW_BRAND_WATERMARK: false,
         SHOW_POWERED_BY_WATERMARK: false,
+        TOOLBAR_BUTTONS: [], // Hide all buttons, we use our own toolbar
+        SETTINGS_SECTIONS: ['devices', 'language', 'profile', 'moderator'],
         SHOW_CHROME_EXTENSION_BANNER: false,
         TILE_VIEW_MAX_COLUMNS: 5,
         TOOLBAR_ALWAYS_VISIBLE: false,
         DISABLE_VIDEO_BACKGROUND: false,
-        css: `
-          .reactions-menu-container { display: none !important; }
-        `
       },
       onload: () => {
         setApiReady(true);
