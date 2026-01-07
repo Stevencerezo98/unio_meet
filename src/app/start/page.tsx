@@ -8,8 +8,8 @@ import SplashScreen from '@/components/SplashScreen';
 import { usePWA } from '@/hooks/usePWA';
 
 function StartHeader() {
-  const { isStandalone } = usePWA();
-  const headerLink = isStandalone ? '#' : '/';
+  // Always link to /start from the start page header.
+  const headerLink = '/start';
 
   return (
     <header className="absolute top-0 left-0 right-0 p-4">
