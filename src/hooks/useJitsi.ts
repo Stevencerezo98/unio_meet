@@ -87,35 +87,29 @@ export function useJitsi({
     
     const updateParticipants = () => {
         if (!jitsiApi) return;
-
-        const allParticipants = jitsiApi.getParticipantsInfo();
-        const localUserArray = allParticipants.filter(p => p.local);
-        const remoteParticipants = allParticipants.filter(p => !p.local);
-
-        const uniqueParticipants = new Map<string, JitsiParticipant>();
-
-        // Add local user first, ensuring only one entry
-        if (localUserArray.length > 0) {
-            const localUser = localUserArray[0];
-            if(!uniqueParticipants.has(localUser.id)){
-                 uniqueParticipants.set(localUser.id, {
-                    ...localUser,
-                    displayName: jitsiApi.getDisplayName(localUser.id) || 'Me',
-                });
-            }
-        }
         
-        // Add remote users
-        remoteParticipants.forEach(p => {
-            if (!uniqueParticipants.has(p.id)) {
-                uniqueParticipants.set(p.id, {
-                ...p,
-                displayName: p.displayName || 'Guest',
+        const allParticipantsInfo = jitsiApi.getParticipantsInfo();
+        const localParticipant = allParticipantsInfo.find(p => p.local);
+        
+        const newParticipantsMap = new Map<string, JitsiParticipant>();
+
+        if (localParticipant) {
+             newParticipantsMap.set(localParticipant.id, {
+                ...localParticipant,
+                displayName: jitsiApi.getDisplayName(localParticipant.id) || 'Me',
+            });
+        }
+
+        jitsiApi.getParticipantsInfo().forEach(p => {
+            if (!p.local && !newParticipantsMap.has(p.id)) {
+                newParticipantsMap.set(p.id, {
+                    ...p,
+                    displayName: p.displayName || 'Guest'
                 });
             }
         });
         
-        setParticipants(Array.from(uniqueParticipants.values()));
+        setParticipants(Array.from(newParticipantsMap.values()));
     }
 
 
