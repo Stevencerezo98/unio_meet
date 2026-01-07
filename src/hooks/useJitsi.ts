@@ -47,6 +47,7 @@ export function useJitsi({
     setApi(jitsiApi);
 
     const updateParticipants = () => {
+      if (!jitsiApi) return;
       const currentParticipants = jitsiApi.getParticipantsInfo();
       setParticipants(currentParticipants);
     };
@@ -93,7 +94,7 @@ export function useJitsi({
       jitsiApi.dispose();
       setApi(null);
     };
-  }, [parentNode, roomName, domain, userInfo, configOverwrite, interfaceConfigOverwrite]);
+  }, [parentNode, roomName, domain, JSON.stringify(userInfo), JSON.stringify(configOverwrite), JSON.stringify(interfaceConfigOverwrite)]);
 
   const toggleAudio = useCallback(() => {
     api?.executeCommand('toggleAudio');

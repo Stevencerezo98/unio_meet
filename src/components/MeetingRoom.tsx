@@ -9,11 +9,6 @@ import { Loader2 } from 'lucide-react';
 export default function MeetingRoom() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const jitsiContainerRef = useRef<HTMLDivElement>(null);
-  const [jitsiNode, setJitsiNode] = useState<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    setJitsiNode(jitsiContainerRef.current);
-  }, []);
 
   const roomName = useMemo(() => `Unio-Premium-Meeting-${Math.random().toString(36).substr(2, 9)}`, []);
   const userName = 'Demo User';
@@ -49,7 +44,7 @@ export default function MeetingRoom() {
 
   const { api, participants, controls } = useJitsi({
     roomName,
-    parentNode: jitsiNode,
+    parentNode: jitsiContainerRef.current,
     userInfo: { displayName: userName },
     configOverwrite,
     interfaceConfigOverwrite,
@@ -74,7 +69,15 @@ export default function MeetingRoom() {
         {api && (
           <>
             <MeetingToolbar
-              {...controls}
+              isAudioMuted={controls.isAudioMuted}
+              isVideoMuted={controls.isVideoMuted}
+              isScreenSharing={controls.isScreenSharing}
+              isTileView={controls.isTileView}
+              toggleAudio={controls.toggleAudio}
+              toggleVideo={controls.toggleVideo}
+              toggleShareScreen={controls.toggleShareScreen}
+              toggleTileView={controls.toggleTileView}
+              hangup={controls.hangup}
               isSidebarOpen={isSidebarOpen}
               toggleSidebar={toggleSidebar}
             />
