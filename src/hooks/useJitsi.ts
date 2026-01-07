@@ -91,21 +91,19 @@ export function useJitsi({
     const updateParticipants = () => {
         if (!jitsiApi) return;
         
-        const allParticipants = jitsiApi.getParticipantsInfo();
         const newParticipantsMap = new Map<string, JitsiParticipant>();
-
-        const localId = allParticipants.find(p => p.local)?.id;
-
-        if (localId) {
-             const localParticipant = jitsiApi.getParticipantsInfo().find(p => p.id === localId);
-             if(localParticipant) {
-                newParticipantsMap.set(localParticipant.id, {
-                    ...localParticipant,
-                    displayName: jitsiApi.getDisplayName(localParticipant.id) || 'Me',
-                });
-             }
-        }
         
+        const localParticipantInfo = jitsiApi.getParticipantsInfo().find(p => p.local);
+        if (localParticipantInfo) {
+             const localId = localParticipantInfo.id;
+             const localParticipant = {
+                ...localParticipantInfo,
+                displayName: jitsiApi.getDisplayName(localId) || 'Me',
+             };
+             newParticipantsMap.set(localId, localParticipant);
+        }
+
+        const allParticipants = jitsiApi.getParticipantsInfo();
         allParticipants.forEach(p => {
             if (!p.local && !newParticipantsMap.has(p.id)) {
                  newParticipantsMap.set(p.id, {
@@ -133,7 +131,14 @@ export function useJitsi({
       onMeetingEndRef.current?.();
     });
     
-    const participantEvents = ['participantJoined', 'participantLeft', 'participantKickedOut', 'displayNameChange', 'avatarChanged', 'participantRoleChanged'];
+    jitsiApi.on('participantJoined', () => {
+        if (navigator.vibrate) {
+            navigator.vibrate(100);
+        }
+        updateParticipants();
+    });
+
+    const participantEvents = ['participantLeft', 'participantKickedOut', 'displayNameChange', 'avatarChanged', 'participantRoleChanged'];
     participantEvents.forEach(event => jitsiApi.on(event, updateParticipants));
 
     jitsiApi.on('audioMuteStatusChanged', (payload: { muted: boolean }) => setAudioMuted(payload.muted));

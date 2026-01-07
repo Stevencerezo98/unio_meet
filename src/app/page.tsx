@@ -12,6 +12,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import type { LandingContent } from '@/lib/landing-content';
 import { loadLandingContent, generateRandomRoomName } from '@/app/actions';
+import InstallPWAButton from '@/components/InstallPWAButton';
+import SplashScreen from '@/components/SplashScreen';
 
 
 const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = {
@@ -25,13 +27,18 @@ export default function Home() {
   const [roomName, setRoomName] = useState('');
   const router = useRouter();
   const [content, setContent] = useState<LandingContent | null>(null);
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
+    const splashTimer = setTimeout(() => setShowSplash(false), 2000);
+    
     async function fetchContent() {
       const landingContent = await loadLandingContent();
       setContent(landingContent);
     }
     fetchContent();
+
+    return () => clearTimeout(splashTimer);
   }, []);
 
 
@@ -56,12 +63,8 @@ export default function Home() {
     visible: { opacity: 1, y: 0 },
   };
 
-  if (!content) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    );
+  if (showSplash || !content) {
+    return <SplashScreen />;
   }
 
   const { header, hero, features, footer } = content;
@@ -189,6 +192,7 @@ export default function Home() {
         </motion.section>
       </main>
       <Footer content={footer} />
+      <InstallPWAButton />
     </div>
   );
 }

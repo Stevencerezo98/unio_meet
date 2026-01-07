@@ -33,6 +33,12 @@ interface MeetingToolbarProps {
   sendReaction: (reaction: string) => void;
 }
 
+const hapticFeedback = () => {
+    if(navigator.vibrate) {
+        navigator.vibrate(50);
+    }
+}
+
 const ToolbarButton = ({
   onClick,
   label,
@@ -51,7 +57,7 @@ const ToolbarButton = ({
       <Button
         variant={variant}
         size="icon"
-        onClick={onClick}
+        onClick={() => { onClick(); hapticFeedback(); }}
         className={`rounded-full h-14 w-14 transition-colors duration-300 ${
           isActive
             ? 'bg-primary/80 hover:bg-primary text-primary-foreground'
@@ -86,6 +92,7 @@ const ReactionsPopover = ({ onReactionClick }: { onReactionClick: (reaction: str
                         <Button
                             size="icon"
                             className="rounded-full h-14 w-14 bg-black/40 hover:bg-black/60 text-white"
+                             onClick={hapticFeedback}
                         >
                             <Smile className="h-6 w-6" />
                         </Button>
@@ -103,7 +110,7 @@ const ReactionsPopover = ({ onReactionClick }: { onReactionClick: (reaction: str
                             variant="ghost"
                             size="icon"
                             className="text-2xl"
-                            onClick={() => onReactionClick(r.name)}
+                            onClick={() => {onReactionClick(r.name); hapticFeedback();}}
                         >
                             {r.emoji}
                         </Button>
@@ -129,7 +136,7 @@ export default function MeetingToolbar({
   sendReaction,
 }: MeetingToolbarProps) {
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pb-[env(safe-area-inset-bottom)]">
       <TooltipProvider>
         <div className="flex items-center justify-center gap-4 rounded-full bg-black/30 backdrop-blur-md p-3 border border-neutral-700/50 shadow-2xl">
           <ToolbarButton onClick={toggleAudio} label={isAudioMuted ? 'Unmute' : 'Mute'}>
