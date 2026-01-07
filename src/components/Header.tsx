@@ -12,14 +12,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { HeaderContent, NavItem as NavItemType, Link as LinkType } from '@/lib/landing-content';
+import type { HeaderContent, NavItem as NavItemType } from '@/lib/landing-content';
 import { ThemeToggle } from './ThemeToggle';
 import { usePWA } from '@/hooks/usePWA';
 
 const NavItem = ({ item }: { item: NavItemType }) => {
   const { canInstall, install } = usePWA();
 
-  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url: string) => {
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url?: string) => {
     if (url === '#install-pwa' && canInstall) {
       e.preventDefault();
       install();
@@ -36,25 +36,20 @@ const NavItem = ({ item }: { item: NavItemType }) => {
                 </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
-                {item.items.map((subItem, index) => {
-                   if (subItem.url === '#install-pwa' && !canInstall) return null;
-                   return (
+                {item.items.map((subItem, index) => (
                     <DropdownMenuItem key={index} asChild>
                         <Link href={subItem.url} onClick={(e) => handleLinkClick(e, subItem.url)}>
                             {subItem.text}
                         </Link>
                     </DropdownMenuItem>
-                   )
-                })}
+                ))}
             </DropdownMenuContent>
         </DropdownMenu>
     );
   }
   
-  if (item.url === '#install-pwa' && !canInstall) return null;
-  
   return (
-    <Link href={item.url || '#'} onClick={(e) => handleLinkClick(e, item.url || '#')} className="transition-colors hover:text-primary">
+    <Link href={item.url || '#'} onClick={(e) => handleLinkClick(e, item.url)} className="transition-colors hover:text-primary">
         {item.text}
     </Link>
   );
@@ -113,4 +108,3 @@ export default function Header({ content }: { content: HeaderContent | null }) {
     </motion.header>
   );
 }
-

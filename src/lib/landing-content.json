@@ -1,4 +1,3 @@
-
 {
   "header": {
     "logo": {
@@ -8,24 +7,62 @@
     "navItems": [
       {
         "text": "Productos",
+        "url": "",
         "items": [
-          { "text": "Reuniones", "url": "#" },
-          { "text": "Chat de Equipo", "url": "#" },
-          { "text": "Pizarra Virtual", "url": "#" },
-          { "text": "Eventos Virtuales", "url": "#" }
+          {
+            "text": "Reuniones",
+            "url": "#"
+          },
+          {
+            "text": "Chat de Equipo",
+            "url": "#"
+          },
+          {
+            "text": "Pizarra Virtual",
+            "url": "#"
+          },
+          {
+            "text": "Eventos Virtuales",
+            "url": "#"
+          }
         ]
       },
-      { "text": "Planes y Precios", "url": "#" },
+      {
+        "text": "Planes y Precios",
+        "url": "#",
+        "items": []
+      },
       {
         "text": "Recursos",
+        "url": "",
         "items": [
-          { "text": "Blog", "url": "#" },
-          { "text": "Centro de Soporte", "url": "#" },
-          { "text": "Tutoriales en Video", "url": "#" },
-          { "text": "Descargar la App", "url": "#install-pwa" }
+          {
+            "text": "Blog",
+            "url": "#"
+          },
+          {
+            "text": "Centro de Soporte",
+            "url": "#"
+          },
+          {
+            "text": "Tutoriales en Video",
+            "url": "#"
+          },
+          {
+            "text": "Descargar la App",
+            "url": "#install-pwa"
+          },
+          {
+            "text": "dde",
+            "url": "#"
+          }
         ]
       },
-      { "text": "Contactar a Ventas", "url": "#" }
+      {
+        "text": "Contactar a Ventas",
+        "url": "#",
+        "items": []
+      }
     ],
     "ctaPrimary": {
       "text": "Crear Cuenta Gratis",
@@ -70,43 +107,97 @@
     "brandName": "Unio",
     "brandDescription": "Reuniones privadas, sin fronteras. Videollamadas simples y seguras.",
     "socialLinks": [
-      { "name": "Facebook", "url": "#" },
-      { "name": "Instagram", "url": "#" },
-      { "name": "TikTok", "url": "#" },
-      { "name": "WhatsApp", "url": "#" }
+      {
+        "name": "Facebook",
+        "url": "https://www.facebook.com/"
+      },
+      {
+        "name": "Instagram",
+        "url": "https://www.facebook.com/"
+      },
+      {
+        "name": "TikTok",
+        "url": "https://www.facebook.com/"
+      },
+      {
+        "name": "WhatsApp",
+        "url": "https://www.facebook.com/"
+      }
     ],
     "linkColumns": [
       {
         "title": "Productos",
         "links": [
-          { "text": "Reuniones", "url": "#" },
-          { "text": "Chat de Equipo", "url": "#" },
-          { "text": "Pizarra Virtual", "url": "#" },
-          { "text": "Eventos Virtuales", "url": "#" }
+          {
+            "text": "Reuniones",
+            "url": "#"
+          },
+          {
+            "text": "Chat de Equipo",
+            "url": "#"
+          },
+          {
+            "text": "Pizarra Virtual",
+            "url": "#"
+          },
+          {
+            "text": "Eventos Virtuales",
+            "url": "#"
+          }
         ]
       },
       {
         "title": "Recursos",
         "links": [
-          { "text": "Blog", "url": "#" },
-          { "text": "Centro de Soporte", "url": "#" },
-          { "text": "Tutoriales en Video", "url": "#" },
-          { "text": "Descargar la App", "url": "#install-pwa" }
+          {
+            "text": "Blog",
+            "url": "#"
+          },
+          {
+            "text": "Centro de Soporte",
+            "url": "#install-pwa"
+          },
+          {
+            "text": "Tutoriales en Video",
+            "url": "#"
+          },
+          {
+            "text": "Descargar la App",
+            "url": "#install-pwa"
+          }
         ]
       },
       {
         "title": "Empresa",
         "links": [
-          { "text": "Sobre Nosotros", "url": "#" },
-          { "text": "Contactar a Ventas", "url": "#" },
-          { "text": "Carreras", "url": "#" },
-          { "text": "Prensa", "url": "#" }
+          {
+            "text": "Sobre Nosotros",
+            "url": "#"
+          },
+          {
+            "text": "Contactar a Ventas",
+            "url": "#"
+          },
+          {
+            "text": "Carreras",
+            "url": "#"
+          },
+          {
+            "text": "Prensa",
+            "url": "#"
+          }
         ]
       }
     ],
     "legalLinks": [
-      { "text": "Términos de Servicio", "url": "#" },
-      { "text": "Política de Privacidad", "url": "#" }
+      {
+        "text": "Términos de Servicio",
+        "url": "#"
+      },
+      {
+        "text": "Política de Privacidad",
+        "url": "#"
+      }
     ],
     "copyright": "© {year} Unio, Inc. Todos los derechos reservados."
   },

@@ -16,10 +16,6 @@ const FooterLink = ({ href, children }: { href: string; children: React.ReactNod
       install();
     }
   };
-
-  if (href === '#install-pwa' && !canInstall) {
-    return null;
-  }
   
   return (
     <Link href={href} onClick={handleClick} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
