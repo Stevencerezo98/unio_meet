@@ -38,10 +38,9 @@ const NavItem = ({ item }: { item: NavItemType }) => {
             <DropdownMenuContent className="w-56">
                 {item.items.map((subItem, index) => {
                   if (subItem.url === '#install-pwa') {
-                    if (!canInstall) return null;
                     return (
                        <DropdownMenuItem key={index} asChild>
-                          <button onClick={handleInstallClick} className="w-full text-left">
+                          <button onClick={handleInstallClick} className="w-full text-left" disabled={!canInstall}>
                             {subItem.text}
                           </button>
                         </DropdownMenuItem>
@@ -61,9 +60,8 @@ const NavItem = ({ item }: { item: NavItemType }) => {
   }
 
   if (item.url === '#install-pwa') {
-     if (!canInstall) return null;
      return (
-        <button onClick={handleInstallClick} className="transition-colors hover:text-primary text-sm font-medium">
+        <button onClick={handleInstallClick} className="transition-colors hover:text-primary text-sm font-medium" disabled={!canInstall}>
           {item.text}
         </button>
      )

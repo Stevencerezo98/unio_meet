@@ -11,16 +11,15 @@ const FooterLink = ({ href, children }: { href: string; children: React.ReactNod
   const { canInstall, install } = usePWA();
 
   const handleClick = (e: React.MouseEvent) => {
-    if (href === '#install-pwa' && canInstall) {
+    if (canInstall) {
       e.preventDefault();
       install();
     }
   };
 
   if (href === '#install-pwa') {
-    if (!canInstall) return null;
     return (
-       <button onClick={handleClick} className="text-sm text-muted-foreground transition-colors hover:text-foreground text-left">
+       <button onClick={handleClick} className="text-sm text-muted-foreground transition-colors hover:text-foreground text-left disabled:opacity-50 disabled:cursor-not-allowed" disabled={!canInstall}>
         {children}
       </button>
     )
