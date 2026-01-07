@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -24,7 +25,7 @@ export default function LoginPage() {
       const result = await login({ username, password });
       if (result.success) {
         toast({ title: 'Login successful!', description: 'Redirecting to dashboard...' });
-        router.push('/admin');
+        router.refresh();
       } else {
         toast({
           variant: 'destructive',
