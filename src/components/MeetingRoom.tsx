@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState, useMemo, useEffect } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import { useJitsi } from '@/hooks/useJitsi';
 import MeetingToolbar from './MeetingToolbar';
 import ParticipantSidebar from './ParticipantSidebar';
@@ -44,7 +44,7 @@ export default function MeetingRoom() {
 
   const { api, participants, controls } = useJitsi({
     roomName,
-    parentNode: jitsiContainerRef.current,
+    parentNode: jitsiContainerRef,
     userInfo: { displayName: userName },
     configOverwrite,
     interfaceConfigOverwrite,

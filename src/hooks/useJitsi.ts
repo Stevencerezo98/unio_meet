@@ -5,7 +5,7 @@ import type { JitsiApi, JitsiParticipant } from '@/lib/types';
 
 interface UseJitsiProps {
   roomName: string;
-  parentNode: HTMLDivElement | null;
+  parentNode: React.RefObject<HTMLDivElement>;
   domain?: string;
   userInfo?: {
     displayName?: string;
@@ -30,13 +30,13 @@ export function useJitsi({
   const [isScreenSharing, setScreenSharing] = useState(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.JitsiMeetExternalAPI || !parentNode) {
+    if (typeof window === 'undefined' || !window.JitsiMeetExternalAPI || !parentNode.current) {
       return;
     }
 
     const jitsiApi = new window.JitsiMeetExternalAPI(domain, {
       roomName,
-      parentNode,
+      parentNode: parentNode.current,
       width: '100%',
       height: '100%',
       userInfo,
