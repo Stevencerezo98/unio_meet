@@ -38,6 +38,7 @@ export default function LobbyRoom() {
     if (settings.name) {
       setDisplayName(settings.name);
     } else {
+      // Generate a random name only if no name is set
       setDisplayName(uniqueNamesGenerator({
           dictionaries: [adjectives, colors, animals],
           separator: ' ',
@@ -91,19 +92,17 @@ export default function LobbyRoom() {
 
 
   const handleJoinMeeting = () => {
+    // Save current settings before joining
+    saveSettings({ name: displayName, avatar: avatarUrl || '' });
+    
     if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
     }
     const query = new URLSearchParams({
-      displayName: displayName || 'Guest',
       audioMuted: String(isAudioMuted),
-      videoMuted: String(isVideoMuted || !hasPermissions), // Mute video if no permissions
+      videoMuted: String(isVideoMuted || !hasPermissions),
     });
-
-    if (avatarUrl) {
-      query.set('avatarUrl', avatarUrl);
-    }
-
+    
     router.push(`/meeting/${params.roomName}?${query.toString()}`);
   };
 
@@ -208,7 +207,7 @@ export default function LobbyRoom() {
                         <Avatar className="h-16 w-16 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                             <AvatarImage src={avatarUrl ?? undefined} />
                             <AvatarFallback className="text-2xl">
-                                {displayName?.charAt(0).toUpperCase()}
+                                {displayName?.charAt(0).toUpperCase() || '?'}
                             </AvatarFallback>
                         </Avatar>
                         <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full p-1.5 border-2 border-background cursor-pointer" onClick={() => fileInputRef.current?.click()}>

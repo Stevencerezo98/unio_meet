@@ -3,24 +3,24 @@
 
 import MeetingRoom from '@/components/MeetingRoom';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, use } from 'react';
+import { Suspense } from 'react';
+import { useUserSettings } from '@/hooks/use-user-settings';
 
-function MeetingPageContent({ params }: { params: Promise<{ roomName: string }> }) {
-  const resolvedParams = use(params);
+function MeetingPageContent({ params }: { params: { roomName: string } }) {
   const searchParams = useSearchParams();
-  const displayName = searchParams.get('displayName') || 'Guest';
+  const [settings] = useUserSettings();
+
   const audioMuted = searchParams.get('audioMuted') === 'true';
   const videoMuted = searchParams.get('videoMuted') === 'true';
-  const avatarUrl = searchParams.get('avatarUrl');
 
   return (
     <main>
       <MeetingRoom
-        roomName={resolvedParams.roomName}
-        displayName={displayName}
+        roomName={params.roomName}
+        displayName={settings.name}
+        avatarUrl={settings.avatar}
         startWithAudioMuted={audioMuted}
         startWithVideoMuted={videoMuted}
-        avatarUrl={avatarUrl || undefined}
       />
     </main>
   );
