@@ -2,10 +2,10 @@
 
 import MeetingRoom from '@/components/MeetingRoom';
 
-export default function MeetingPage({ params }: { params: { roomName: string } }) {
+export default function MeetingPage({ params: { roomName } }: { params: { roomName: string } }) {
   return (
     <main>
-      <MeetingRoom roomName={decodeURIComponent(params.roomName)} />
+      <MeetingRoom roomName={decodeURIComponent(roomName)} />
     </main>
   );
 }
