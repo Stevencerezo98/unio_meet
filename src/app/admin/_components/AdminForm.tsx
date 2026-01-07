@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { useForm, useFieldArray, FormProvider } from 'react-hook-form';
+import { useForm, useFieldArray, FormProvider, useFormContext } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import type { LandingContent } from '@/lib/landing-content';
@@ -12,7 +12,6 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -73,6 +72,50 @@ const landingContentSchema = z.object({
 interface AdminFormProps {
   content: LandingContent;
 }
+
+function LinksArray({ name }: { name: `footer.linkColumns.${number}.links` }) {
+  const { control, register } = useFormContext();
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name,
+  });
+
+  return (
+    <div className="space-y-2">
+      {fields.map((field, index) => (
+        <div key={field.id} className="flex items-center gap-2">
+          <Input
+            {...register(`${name}.${index}.text`)}
+            placeholder="Link Text"
+            className="flex-1"
+          />
+          <Input
+            {...register(`${name}.${index}.url`)}
+            placeholder="URL"
+            className="flex-1"
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => remove(index)}
+          >
+            <Trash className="h-4 w-4" />
+          </Button>
+        </div>
+      ))}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => append({ text: '', url: '#' })}
+      >
+        Add Link
+      </Button>
+    </div>
+  );
+}
+
 
 export function AdminForm({ content }: AdminFormProps) {
   const { toast } = useToast();
@@ -135,11 +178,11 @@ export function AdminForm({ content }: AdminFormProps) {
           description: result.error,
         });
       }
-    } catch (e) {
+    } catch (e: any) {
       toast({
         variant: 'destructive',
         title: 'An unexpected error occurred.',
-        description: 'Please try again later.',
+        description: e.message || 'Please try again later.',
       });
     } finally {
       setIsLoading(false);
@@ -159,35 +202,35 @@ export function AdminForm({ content }: AdminFormProps) {
                   <div>
                     <Label htmlFor="hero.title">Title</Label>
                     <Input id="hero.title" {...register('hero.title')} />
-                    {errors.hero?.title && <p className="text-red-500 text-sm mt-1">{errors.hero.title.message}</p>}
+                    {errors.hero?.title && <p className="text-destructive text-sm mt-1">{errors.hero.title.message}</p>}
                   </div>
                   <div>
                     <Label htmlFor="hero.subtitle">Subtitle</Label>
                     <Textarea id="hero.subtitle" {...register('hero.subtitle')} />
-                    {errors.hero?.subtitle && <p className="text-red-500 text-sm mt-1">{errors.hero.subtitle.message}</p>}
+                    {errors.hero?.subtitle && <p className="text-destructive text-sm mt-1">{errors.hero.subtitle.message}</p>}
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="hero.ctaPrimary">Primary Button Text</Label>
                       <Input id="hero.ctaPrimary" {...register('hero.ctaPrimary')} />
-                      {errors.hero?.ctaPrimary && <p className="text-red-500 text-sm mt-1">{errors.hero.ctaPrimary.message}</p>}
+                      {errors.hero?.ctaPrimary && <p className="text-destructive text-sm mt-1">{errors.hero.ctaPrimary.message}</p>}
                     </div>
                     <div>
                       <Label htmlFor="hero.ctaSecondary">Secondary Button Text</Label>
                       <Input id="hero.ctaSecondary" {...register('hero.ctaSecondary')} />
-                      {errors.hero?.ctaSecondary && <p className="text-red-500 text-sm mt-1">{errors.hero.ctaSecondary.message}</p>}
+                      {errors.hero?.ctaSecondary && <p className="text-destructive text-sm mt-1">{errors.hero.ctaSecondary.message}</p>}
                     </div>
                   </div>
                    <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="hero.cardTitle">Card Title</Label>
                         <Input id="hero.cardTitle" {...register('hero.cardTitle')} />
-                        {errors.hero?.cardTitle && <p className="text-red-500 text-sm mt-1">{errors.hero.cardTitle.message}</p>}
+                        {errors.hero?.cardTitle && <p className="text-destructive text-sm mt-1">{errors.hero.cardTitle.message}</p>}
                       </div>
                       <div>
                         <Label htmlFor="hero.cardDescription">Card Description</Label>
                         <Input id="hero.cardDescription" {...register('hero.cardDescription')} />
-                        {errors.hero?.cardDescription && <p className="text-red-500 text-sm mt-1">{errors.hero.cardDescription.message}</p>}
+                        {errors.hero?.cardDescription && <p className="text-destructive text-sm mt-1">{errors.hero.cardDescription.message}</p>}
                       </div>
                   </div>
                 </CardContent>
@@ -204,12 +247,12 @@ export function AdminForm({ content }: AdminFormProps) {
                     <div>
                         <Label htmlFor="features.title">Section Title</Label>
                         <Input id="features.title" {...register('features.title')} />
-                        {errors.features?.title && <p className="text-red-500 text-sm mt-1">{errors.features.title.message}</p>}
+                        {errors.features?.title && <p className="text-destructive text-sm mt-1">{errors.features.title.message}</p>}
                     </div>
                      <div>
                         <Label htmlFor="features.subtitle">Section Subtitle</Label>
                         <Textarea id="features.subtitle" {...register('features.subtitle')} />
-                        {errors.features?.subtitle && <p className="text-red-500 text-sm mt-1">{errors.features.subtitle.message}</p>}
+                        {errors.features?.subtitle && <p className="text-destructive text-sm mt-1">{errors.features.subtitle.message}</p>}
                     </div>
 
                     <h3 className="text-lg font-semibold mt-4">Feature Items</h3>
@@ -219,17 +262,17 @@ export function AdminForm({ content }: AdminFormProps) {
                                 <div>
                                     <Label>Icon Name (from lucide-react)</Label>
                                     <Input {...register(`features.items.${index}.icon`)} placeholder="e.g., Lock, Zap, TvMinimal"/>
-                                    {errors.features?.items?.[index]?.icon && <p className="text-red-500 text-sm mt-1">{errors.features.items[index].icon.message}</p>}
+                                    {errors.features?.items?.[index]?.icon && <p className="text-destructive text-sm mt-1">{errors.features.items[index].icon?.message}</p>}
                                 </div>
                                 <div>
                                     <Label>Title</Label>
                                     <Input {...register(`features.items.${index}.title`)} />
-                                    {errors.features?.items?.[index]?.title && <p className="text-red-500 text-sm mt-1">{errors.features.items[index].title.message}</p>}
+                                    {errors.features?.items?.[index]?.title && <p className="text-destructive text-sm mt-1">{errors.features.items[index].title?.message}</p>}
                                 </div>
                                 <div>
                                     <Label>Description</Label>
                                     <Textarea {...register(`features.items.${index}.description`)} />
-                                    {errors.features?.items?.[index]?.description && <p className="text-red-500 text-sm mt-1">{errors.features.items[index].description.message}</p>}
+                                    {errors.features?.items?.[index]?.description && <p className="text-destructive text-sm mt-1">{errors.features.items[index].description?.message}</p>}
                                 </div>
                             </div>
                             <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-6 w-6" onClick={() => removeFeature(index)}>
@@ -257,12 +300,12 @@ export function AdminForm({ content }: AdminFormProps) {
                             <div>
                                 <Label>Brand Name</Label>
                                 <Input {...register('footer.brandName')} />
-                                {errors.footer?.brandName && <p className="text-red-500 text-sm mt-1">{errors.footer.brandName.message}</p>}
+                                {errors.footer?.brandName && <p className="text-destructive text-sm mt-1">{errors.footer.brandName.message}</p>}
                             </div>
                              <div>
                                 <Label>Brand Description</Label>
                                 <Input {...register('footer.brandDescription')} />
-                                {errors.footer?.brandDescription && <p className="text-red-500 text-sm mt-1">{errors.footer.brandDescription.message}</p>}
+                                {errors.footer?.brandDescription && <p className="text-destructive text-sm mt-1">{errors.footer.brandDescription.message}</p>}
                             </div>
                         </div>
 
@@ -275,12 +318,12 @@ export function AdminForm({ content }: AdminFormProps) {
                                         <div>
                                             <Label>Icon Name</Label>
                                             <Input {...register(`footer.socialLinks.${index}.name`)} placeholder="e.g., Facebook, TikTok"/>
-                                            {errors.footer?.socialLinks?.[index]?.name && <p className="text-red-500 text-sm mt-1">{errors.footer.socialLinks[index].name.message}</p>}
+                                            {errors.footer?.socialLinks?.[index]?.name && <p className="text-destructive text-sm mt-1">{errors.footer.socialLinks[index].name?.message}</p>}
                                         </div>
                                          <div>
                                             <Label>URL</Label>
                                             <Input {...register(`footer.socialLinks.${index}.url`)} placeholder="https://..."/>
-                                            {errors.footer?.socialLinks?.[index]?.url && <p className="text-red-500 text-sm mt-1">{errors.footer.socialLinks[index].url.message}</p>}
+                                            {errors.footer?.socialLinks?.[index]?.url && <p className="text-destructive text-sm mt-1">{errors.footer.socialLinks[index].url?.message}</p>}
                                         </div>
                                     </div>
                                     <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-6 w-6" onClick={() => removeSocial(index)}>
@@ -310,7 +353,7 @@ export function AdminForm({ content }: AdminFormProps) {
                                     </Button>
                                 </Card>
                             ))}
-                             <Button type="button" variant="outline" onClick={() => appendColumn({ title: '', links: [] })}>
+                             <Button type="button" variant="outline" onClick={() => appendColumn({ title: '', links: [{text: '', url: ''}] })}>
                                 Add Link Column
                             </Button>
                         </div>
@@ -360,46 +403,4 @@ export function AdminForm({ content }: AdminFormProps) {
   );
 }
 
-
-function LinksArray({ name }: { name: `footer.linkColumns.${number}.links` }) {
-  const { control, register } = useFormContext();
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name,
-  });
-
-  return (
-    <div className="space-y-2">
-      {fields.map((field, index) => (
-        <div key={field.id} className="flex items-center gap-2">
-          <Input
-            {...register(`${name}.${index}.text`)}
-            placeholder="Link Text"
-            className="flex-1"
-          />
-          <Input
-            {...register(`${name}.${index}.url`)}
-            placeholder="URL"
-            className="flex-1"
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => remove(index)}
-          >
-            <Trash className="h-4 w-4" />
-          </Button>
-        </div>
-      ))}
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        onClick={() => append({ text: '', url: '#' })}
-      >
-        Add Link
-      </Button>
-    </div>
-  );
-}
+    

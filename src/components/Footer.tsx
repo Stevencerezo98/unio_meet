@@ -41,13 +41,8 @@ const SocialIcon = ({ iconName, href }: { iconName: string; href: string }) => {
 
 export default function Footer({ content }: { content: FooterContent | null }) {
   if (!content) {
-    return (
-      <footer className="border-t border-border bg-background/50">
-        <div className="container mx-auto py-12 px-4 text-center">
-            <p>Loading footer...</p>
-        </div>
-      </footer>
-    );
+    // Return a minimal footer or null if content is not yet available
+    return <footer className="border-t border-border bg-background/50" />;
   }
 
   return (
@@ -98,3 +93,5 @@ export default function Footer({ content }: { content: FooterContent | null }) {
     </footer>
   );
 }
+
+    
