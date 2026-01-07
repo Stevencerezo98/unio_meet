@@ -1,4 +1,31 @@
 
+export interface Link {
+    text: string;
+    url: string;
+}
+
+export interface NavItem {
+    text: string;
+    url?: string;
+    items?: Link[];
+}
+
+export interface HeaderContent {
+    logo: {
+        type: 'text' | 'image';
+        value: string;
+    };
+    navItems: NavItem[];
+    ctaPrimary: {
+        text: string;
+        url: string;
+    };
+    ctaSecondary: {
+        text: string;
+        url: string;
+    };
+}
+
 export interface HeroContent {
     title: string;
     subtitle: string;
@@ -25,14 +52,9 @@ export interface SocialLink {
     url: string;
 }
 
-export interface FooterLink {
-    text: string;
-    url: string;
-}
-
 export interface LinkColumn {
     title: string;
-    links: FooterLink[];
+    links: Link[];
 }
 
 export interface FooterContent {
@@ -40,11 +62,12 @@ export interface FooterContent {
     brandDescription: string;
     socialLinks: SocialLink[];
     linkColumns: LinkColumn[];
-    legalLinks: FooterLink[];
+    legalLinks: Link[];
     copyright: string;
 }
 
 export interface LandingContent {
+    header: HeaderContent;
     hero: HeroContent;
     features: FeaturesContent;
     footer: FooterContent;

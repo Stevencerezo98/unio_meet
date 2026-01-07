@@ -1,5 +1,41 @@
 
 {
+  "header": {
+    "logo": {
+      "type": "text",
+      "value": "Unio"
+    },
+    "navItems": [
+      {
+        "text": "Productos",
+        "items": [
+          { "text": "Reuniones", "url": "#" },
+          { "text": "Chat de Equipo", "url": "#" },
+          { "text": "Pizarra Virtual", "url": "#" },
+          { "text": "Eventos Virtuales", "url": "#" }
+        ]
+      },
+      { "text": "Planes y Precios", "url": "#" },
+      {
+        "text": "Recursos",
+        "items": [
+          { "text": "Blog", "url": "#" },
+          { "text": "Centro de Soporte", "url": "#" },
+          { "text": "Tutoriales en Video", "url": "#" },
+          { "text": "Descargar la App", "url": "#" }
+        ]
+      },
+      { "text": "Contactar a Ventas", "url": "#" }
+    ],
+    "ctaPrimary": {
+      "text": "Crear Cuenta Gratis",
+      "url": "#"
+    },
+    "ctaSecondary": {
+      "text": "Iniciar Sesión",
+      "url": "/login"
+    }
+  },
   "hero": {
     "title": "Reuniones privadas, sin fronteras",
     "subtitle": "Videollamadas simples y seguras, alojadas en nuestra propia infraestructura para máxima privacidad. Sin registros, sin rastreo.",
@@ -63,8 +99,7 @@
           { "text": "Sobre Nosotros", "url": "#" },
           { "text": "Contactar a Ventas", "url": "#" },
           { "text": "Carreras", "url": "#" },
-          { "text": "Prensa", "url": "#" },
-          { "text": "Legal", "url": "#" }
+          { "text": "Prensa", "url": "#" }
         ]
       }
     ],

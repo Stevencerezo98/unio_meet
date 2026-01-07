@@ -21,13 +21,26 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Trash } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const linkSchema = z.object({
   text: z.string().min(1, 'Link text is required'),
-  url: z.string().url('Must be a valid URL'),
+  url: z.string().min(1, 'URL is required'),
 });
+
+const navItemSchema = z.object({
+    text: z.string().min(1, "Nav item text is required"),
+    url: z.string().optional(),
+    items: z.array(linkSchema).optional(),
+})
 
 const socialLinkSchema = z.object({
   name: z.string().min(1, 'Social media name is required'),
@@ -41,6 +54,15 @@ const featureItemSchema = z.object({
 });
 
 const landingContentSchema = z.object({
+  header: z.object({
+    logo: z.object({
+      type: z.enum(['text', 'image']),
+      value: z.string().min(1, "Logo value is required"),
+    }),
+    navItems: z.array(navItemSchema),
+    ctaPrimary: linkSchema,
+    ctaSecondary: linkSchema,
+  }),
   hero: z.object({
     title: z.string().min(1, 'Hero title is required'),
     subtitle: z.string().min(1, 'Hero subtitle is required'),
@@ -85,41 +107,41 @@ export function AdminForm({ content }: AdminFormProps) {
     register,
     control,
     handleSubmit,
+    watch,
     formState: { errors },
   } = formMethods;
+
+  const {
+    fields: navItemFields,
+    append: appendNavItem,
+    remove: removeNavItem,
+  } = useFieldArray({ control, name: 'header.navItems' });
 
   const {
     fields: featureFields,
     append: appendFeature,
     remove: removeFeature,
-  } = useFieldArray({
-    control,
-    name: 'features.items',
-  });
+  } = useFieldArray({ control, name: 'features.items' });
 
   const {
     fields: socialFields,
     append: appendSocial,
     remove: removeSocial,
-  } = useFieldArray({
-    control,
-    name: 'footer.socialLinks',
-  });
+  } = useFieldArray({ control, name: 'footer.socialLinks' });
 
-   const {
+  const {
     fields: legalFields,
     append: appendLegal,
     remove: removeLegal,
-  } = useFieldArray({
-    control,
-    name: 'footer.legalLinks',
-  });
+  } = useFieldArray({ control, name: 'footer.legalLinks' });
 
-  const { fields: columnFields, remove: removeColumn, append: appendColumn} = useFieldArray({
-    control,
-    name: 'footer.linkColumns',
-  });
-
+  const {
+    fields: columnFields,
+    remove: removeColumn,
+    append: appendColumn,
+  } = useFieldArray({ control, name: 'footer.linkColumns' });
+  
+  const logoType = watch('header.logo.type');
 
   const onSubmit = async (data: LandingContent) => {
     setIsLoading(true);
@@ -148,7 +170,92 @@ export function AdminForm({ content }: AdminFormProps) {
   return (
     <FormProvider {...formMethods}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        <Accordion type="multiple" defaultValue={['hero', 'features', 'footer']} className="w-full">
+        <Accordion type="multiple" defaultValue={['header', 'hero', 'features', 'footer']} className="w-full">
+          {/* Header Section */}
+          <AccordionItem value="header">
+            <AccordionTrigger className="text-xl font-bold">Header Section</AccordionTrigger>
+            <AccordionContent>
+              <Card className="border-none">
+                <CardContent className="pt-6 space-y-6">
+                    {/* Logo */}
+                    <div className="space-y-4 p-4 border rounded-lg">
+                        <h3 className="text-lg font-semibold">Logo</h3>
+                        <div>
+                            <Label>Logo Type</Label>
+                            <Select
+                                value={logoType}
+                                onValueChange={(value) => formMethods.setValue('header.logo.type', value as 'text' | 'image')}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select logo type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="text">Text</SelectItem>
+                                    <SelectItem value="image">Image URL</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
+                            <Label>{logoType === 'text' ? 'Logo Text' : 'Logo Image URL'}</Label>
+                            <Input {...register('header.logo.value')} />
+                            {errors.header?.logo?.value && <p className="text-destructive text-sm mt-1">{errors.header.logo.value.message}</p>}
+                        </div>
+                    </div>
+                    {/* Nav Items */}
+                    <div className="space-y-4 p-4 border rounded-lg">
+                        <h3 className="text-lg font-semibold">Navigation Links</h3>
+                        {navItemFields.map((field, index) => (
+                          <Card key={field.id} className="p-4 relative">
+                            <div className="space-y-2">
+                                <div>
+                                    <Label>Item Text</Label>
+                                    <Input {...register(`header.navItems.${index}.text`)} placeholder="e.g., Productos"/>
+                                </div>
+                                <div>
+                                    <Label>URL (optional, for direct links)</Label>
+                                    <Input {...register(`header.navItems.${index}.url`)} placeholder="e.g., /pricing"/>
+                                </div>
+                                <h4 className="font-medium pt-2">Dropdown Sub-items (optional)</h4>
+                                <SubLinksArray navItemIndex={index} />
+                            </div>
+                             <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-6 w-6" onClick={() => removeNavItem(index)}>
+                                <Trash className="h-4 w-4" />
+                            </Button>
+                          </Card>
+                        ))}
+                         <Button type="button" variant="outline" onClick={() => appendNavItem({ text: '', url: '', items: [] })}>
+                            Add Nav Item
+                        </Button>
+                    </div>
+                     {/* CTAs */}
+                    <div className="space-y-4 p-4 border rounded-lg">
+                         <h3 className="text-lg font-semibold">Header Buttons (CTAs)</h3>
+                         <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <Label>Primary Button Text</Label>
+                                <Input {...register('header.ctaPrimary.text')} />
+                            </div>
+                            <div>
+                                <Label>Primary Button URL</Label>
+                                <Input {...register('header.ctaPrimary.url')} />
+                            </div>
+                         </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <Label>Secondary Button Text</Label>
+                                <Input {...register('header.ctaSecondary.text')} />
+                            </div>
+                            <div>
+                                <Label>Secondary Button URL</Label>
+                                <Input {...register('header.ctaSecondary.url')} />
+                            </div>
+                         </div>
+                    </div>
+                </CardContent>
+              </Card>
+            </AccordionContent>
+          </AccordionItem>
+        
           {/* Hero Section */}
           <AccordionItem value="hero">
             <AccordionTrigger className="text-xl font-bold">Hero Section</AccordionTrigger>
@@ -295,59 +402,20 @@ export function AdminForm({ content }: AdminFormProps) {
                         {/* Link Columns */}
                         <div className="space-y-4">
                             <h3 className="text-lg font-semibold">Footer Link Columns</h3>
-                            {columnFields.map((column, colIndex) => {
-                                const { fields: linkFields, append: appendLink, remove: removeLink } = useFieldArray({
-                                    control,
-                                    name: `footer.linkColumns.${colIndex}.links`,
-                                });
-
-                                return (
-                                    <Card key={column.id} className="p-4 relative">
-                                        <div className="space-y-2">
-                                            <Label>Column Title</Label>
-                                            <Input {...register(`footer.linkColumns.${colIndex}.title`)} />
-                                            <hr className="my-4" />
-                                            <h4 className="font-medium">Links in this column:</h4>
-                                            
-                                            <div className="space-y-2">
-                                                {linkFields.map((link, linkIndex) => (
-                                                    <div key={link.id} className="flex items-center gap-2">
-                                                        <Input
-                                                            {...register(`footer.linkColumns.${colIndex}.links.${linkIndex}.text`)}
-                                                            placeholder="Link Text"
-                                                            className="flex-1"
-                                                        />
-                                                        <Input
-                                                            {...register(`footer.linkColumns.${colIndex}.links.${linkIndex}.url`)}
-                                                            placeholder="URL"
-                                                            className="flex-1"
-                                                        />
-                                                        <Button
-                                                            type="button"
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            onClick={() => removeLink(linkIndex)}
-                                                        >
-                                                            <Trash className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
-                                                ))}
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => appendLink({ text: '', url: '#' })}
-                                                >
-                                                    Add Link
-                                                </Button>
-                                            </div>
-                                        </div>
-                                         <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-6 w-6" onClick={() => removeColumn(colIndex)}>
-                                            <Trash className="h-4 w-4" />
-                                        </Button>
-                                    </Card>
-                                )
-                            })}
+                            {columnFields.map((column, colIndex) => (
+                                <Card key={column.id} className="p-4 relative">
+                                    <div className="space-y-2">
+                                        <Label>Column Title</Label>
+                                        <Input {...register(`footer.linkColumns.${colIndex}.title`)} />
+                                        <hr className="my-4" />
+                                        <h4 className="font-medium">Links in this column:</h4>
+                                        <LinkColumnArray colIndex={colIndex} />
+                                    </div>
+                                     <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-6 w-6" onClick={() => removeColumn(colIndex)}>
+                                        <Trash className="h-4 w-4" />
+                                    </Button>
+                                </Card>
+                            ))}
                              <Button type="button" variant="outline" onClick={() => appendColumn({ title: '', links: [{text: '', url: ''}] })}>
                                 Add Link Column
                             </Button>
@@ -395,5 +463,92 @@ export function AdminForm({ content }: AdminFormProps) {
         </Button>
       </form>
     </FormProvider>
+  );
+}
+
+
+function LinkColumnArray({ colIndex }: { colIndex: number }) {
+  const { control, register } = useFormContext<LandingContent>();
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: `footer.linkColumns.${colIndex}.links`,
+  });
+
+  return (
+    <div className="space-y-2">
+      {fields.map((link, linkIndex) => (
+        <div key={link.id} className="flex items-center gap-2">
+          <Input
+            {...register(`footer.linkColumns.${colIndex}.links.${linkIndex}.text`)}
+            placeholder="Link Text"
+            className="flex-1"
+          />
+          <Input
+            {...register(`footer.linkColumns.${colIndex}.links.${linkIndex}.url`)}
+            placeholder="URL"
+            className="flex-1"
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => remove(linkIndex)}
+          >
+            <Trash className="h-4 w-4" />
+          </Button>
+        </div>
+      ))}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => append({ text: '', url: '#' })}
+      >
+        Add Link
+      </Button>
+    </div>
+  );
+}
+
+function SubLinksArray({ navItemIndex }: { navItemIndex: number }) {
+  const { control, register } = useFormContext<LandingContent>();
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: `header.navItems.${navItemIndex}.items`,
+  });
+
+  return (
+    <div className="space-y-2 pl-4 border-l-2">
+      {fields.map((link, linkIndex) => (
+        <div key={link.id} className="flex items-center gap-2">
+          <Input
+            {...register(`header.navItems.${navItemIndex}.items.${linkIndex}.text`)}
+            placeholder="Sub-item Text"
+            className="flex-1"
+          />
+          <Input
+            {...register(`header.navItems.${navItemIndex}.items.${linkIndex}.url`)}
+            placeholder="URL"
+            className="flex-1"
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => remove(linkIndex)}
+          >
+            <Trash className="h-4 w-4" />
+          </Button>
+        </div>
+      ))}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => append({ text: '', url: '#' })}
+      >
+        Add Sub-item
+      </Button>
+    </div>
   );
 }

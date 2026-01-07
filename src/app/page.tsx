@@ -63,14 +63,13 @@ export default function Home() {
     );
   }
 
-  const { hero, features, footer } = content;
+  const { header, hero, features, footer } = content;
 
   return (
     <div className="relative flex flex-col min-h-screen w-full bg-background text-foreground">
-      <Header />
+      <Header content={header} />
       <div className="absolute top-0 left-0 right-0 bottom-0 overflow-hidden -z-10">
-        <div className="absolute top-1/2 left-1/2 w-[800px] h-[800px] bg-primary/20 rounded-full filter blur-[200px] -translate-x-1/2 -translate-y-1/2 opacity-50 animate-pulse" />
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-accent/10 rounded-full filter blur-[150px] opacity-60 animate-pulse animation-delay-2000" />
+         <div className="animated-gradient" />
       </div>
 
       <main className="container mx-auto flex flex-grow flex-col items-center justify-center p-4 pt-32 pb-16">
@@ -105,7 +104,7 @@ export default function Home() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.6, duration: 0.5 }}
           >
-            <Card className="w-full max-w-md shadow-2xl border-neutral-800 bg-white/5 backdrop-blur-xl">
+            <Card className="w-full max-w-md shadow-2xl border-border bg-card/60 backdrop-blur-xl">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-2xl">
                   <Video className="h-6 w-6 text-primary" />
@@ -176,7 +175,7 @@ export default function Home() {
             {features.items.map((feature, index) => {
                 const Icon = iconMap[feature.icon] || Lock;
                 return(
-                    <motion.div key={index} variants={featureVariants} className="flex flex-col items-center p-6 border border-neutral-800 rounded-lg bg-white/5">
+                    <motion.div key={index} variants={featureVariants} className="flex flex-col items-center p-6 border rounded-lg bg-card/60">
                         <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary/10 text-primary mb-4">
                             <Icon className="h-8 w-8" />
                         </div>
@@ -190,9 +189,7 @@ export default function Home() {
           </div>
         </motion.section>
       </main>
-      <Footer content={footer} />
+      <Footer headerContent={header} footerContent={footer} />
     </div>
   );
 }
-
-    
