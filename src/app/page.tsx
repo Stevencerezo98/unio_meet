@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Video } from 'lucide-react';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 export default function Home() {
   const [roomName, setRoomName] = useState('');
@@ -27,7 +28,7 @@ export default function Home() {
   };
 
   return (
-    <div className="relative min-h-screen w-full bg-background text-foreground">
+    <div className="relative flex flex-col min-h-screen w-full bg-background text-foreground">
       <Header />
       {/* Aurora Background */}
       <div className="absolute top-0 left-0 right-0 bottom-0 overflow-hidden -z-10">
@@ -35,7 +36,7 @@ export default function Home() {
         <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-accent/10 rounded-full filter blur-[150px] opacity-60 animate-pulse animation-delay-2000" />
       </div>
 
-      <main className="container mx-auto flex min-h-screen flex-col items-center justify-center p-4">
+      <main className="container mx-auto flex flex-grow flex-col items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -125,6 +126,7 @@ export default function Home() {
           </motion.div>
         </motion.div>
       </main>
+      <Footer />
     </div>
   );
 }
