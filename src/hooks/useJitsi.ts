@@ -47,7 +47,8 @@ export function useJitsi({
       configOverwrite: {
         startWithAudioMuted: startWithAudioMuted,
         startWithVideoMuted: startWithVideoMuted,
-        prejoinPageEnabled: false,
+        // CRUCIAL: Disable Jitsi's own prejoin page to avoid conflicts with our lobby
+        prejoinPageEnabled: false, 
         disableDeepLinking: true,
         enableWelcomePage: false,
         transcribingEnabled: false,
