@@ -67,19 +67,22 @@ export function useJitsi({
         brandingDataUrl: '', // Remove branding link
       },
       interfaceConfigOverwrite: {
+        // --- Aggressive Branding Removal ---
         SHOW_JITSI_WATERMARK: false,
         SHOW_WATERMARK_FOR_GUESTS: false,
         SHOW_BRAND_WATERMARK: false,
         SHOW_POWERED_BY_WATERMARK: false,
-        JITSI_WATERMARK_LINK: '', // Remove watermark link
+        JITSI_WATERMARK_LINK: '',
         BRAND_WATERMARK_LINK: '',
-        TOOLBAR_BUTTONS: [], // Hide all buttons, we use our own toolbar
+        SHOW_POWERED_BY: false,
+
+        // --- Toolbar & UI Customization ---
+        TOOLBAR_BUTTONS: [], // Hide all native buttons
+        TOOLBAR_ALWAYS_VISIBLE: false,
         SETTINGS_SECTIONS: ['devices', 'language', 'profile', 'moderator'],
         SHOW_CHROME_EXTENSION_BANNER: false,
         TILE_VIEW_MAX_COLUMNS: 5,
-        TOOLBAR_ALWAYS_VISIBLE: false,
         DISABLE_VIDEO_BACKGROUND: false,
-        SHOW_POWERED_BY: false,
       },
       onload: () => {
         setApiReady(true);

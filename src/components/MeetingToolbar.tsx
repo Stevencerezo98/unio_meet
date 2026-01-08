@@ -74,7 +74,7 @@ const ToolbarButton = ({
         {children}
       </Button>
     </TooltipTrigger>
-    <TooltipContent side="right">
+    <TooltipContent side="right" className="md:side-top">
       <p>{label}</p>
     </TooltipContent>
   </Tooltip>
@@ -103,7 +103,7 @@ const ReactionsPopover = ({ onReactionClick }: { onReactionClick: (reaction: str
                         </Button>
                     </PopoverTrigger>
                 </TooltipTrigger>
-                <TooltipContent side="right">
+                <TooltipContent side="right" className="md:side-top">
                     <p>Reacciones</p>
                 </TooltipContent>
             </Tooltip>
@@ -156,8 +156,8 @@ export default function MeetingToolbar({
   return (
     <motion.div 
         className="fixed z-50 p-4 
-                   md:bottom-0 md:left-1/2 md:-translate-x-1/2 md:w-full md:pb-[calc(1rem+env(safe-area-inset-bottom))]
-                   left-0 top-1/2 -translate-y-1/2 h-full pl-[calc(1rem+env(safe-area-inset-left))]"
+                   md:bottom-0 md:left-1/2 md:-translate-x-1/2 md:w-auto md:pb-[calc(1rem+env(safe-area-inset-bottom))]
+                   left-0 top-1/2 -translate-y-1/2 h-auto md:h-full w-auto"
         initial={{ x: "-100%", opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.3, delay: 0.5 }}
@@ -187,7 +187,7 @@ export default function MeetingToolbar({
                 </ToolbarButton>
             </div>
 
-            <div className="flex-grow md:flex-grow-0" />
+            <div className="flex-grow md:hidden" />
 
 
             <div className="flex flex-col md:flex-row items-center justify-center gap-3 rounded-full bg-black/30 backdrop-blur-md p-2 border border-neutral-700/50 shadow-2xl">
@@ -215,9 +215,10 @@ export default function MeetingToolbar({
                     <Share2 className="h-6 w-6" />
                 </ToolbarButton>
             </div>
-             <div className="flex-grow md:flex-grow-0" />
+            
+             <div className="flex-grow md:hidden" />
 
-             <div className="flex items-center justify-center gap-3 rounded-full bg-black/30 backdrop-blur-md p-2 border border-neutral-700/50 shadow-2xl">
+             <div className="flex flex-col md:flex-row items-center justify-center gap-3 rounded-full bg-black/30 backdrop-blur-md p-2 border border-neutral-700/50 shadow-2xl">
                  <ToolbarButton onClick={hangup} label="Leave Meeting" variant="destructive">
                     <PhoneOff className="h-6 w-6" />
                 </ToolbarButton>
