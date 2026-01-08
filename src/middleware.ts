@@ -27,20 +27,32 @@ export async function middleware(request: NextRequest) {
     '/thank-you'
   ];
   
-  // Allow access to admin, lobby and meeting for both logged in and anonymous users.
-  // The pages themselves will handle logic based on auth state.
-  if (unprotectedRoutes.includes(pathname) || pathname.startsWith('/lobby') || pathname.startsWith('/meeting') || pathname.startsWith('/admin')) {
+  // Allow access to lobby and meeting for both logged in and anonymous users.
+  if (unprotectedRoutes.includes(pathname) || pathname.startsWith('/lobby') || pathname.startsWith('/meeting') || pathname.startsWith('/start') || pathname.startsWith('/admin')) {
+    // Exception for authenticated users trying to access login/register
+     const sessionCookie = request.cookies.get(sessionCookieName)?.value;
+     if(sessionCookie && (pathname.startsWith('/login') || pathname.startsWith('/register'))) {
+        try {
+            await auth.verifySessionCookie(sessionCookie, true);
+            return NextResponse.redirect(new URL('/start', request.url));
+        } catch (error) {
+            // Invalid cookie, let it proceed to the login/register page.
+            const response = NextResponse.next();
+            response.cookies.delete(sessionCookieName);
+            return response;
+        }
+     }
     return NextResponse.next();
   }
 
   const sessionCookie = request.cookies.get(sessionCookieName)?.value;
 
   if (!sessionCookie) {
-    // If no cookie, and it's a protected route, redirect to login.
-    if (pathname.startsWith('/settings') || pathname.startsWith('/start')) {
+    // If no cookie, and it's a protected route (only /settings now), redirect to login.
+    if (pathname.startsWith('/settings')) {
         return NextResponse.redirect(new URL('/login', request.url));
     }
-    // Otherwise, it's an unprotected route or one that handles anon users, so let it pass.
+    // For other cases that might slip through, allow them.
     return NextResponse.next();
   }
 
@@ -48,11 +60,6 @@ export async function middleware(request: NextRequest) {
     // Verify the session cookie. This checks if the user is genuinely logged in.
     await auth.verifySessionCookie(sessionCookie, true);
     
-    // If the user is logged in and tries to access login/register, redirect them to the start page.
-    if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
-      return NextResponse.redirect(new URL('/start', request.url));
-    }
-
     // For any other route, let them proceed.
     return NextResponse.next();
   } catch (error) {
@@ -62,7 +69,7 @@ export async function middleware(request: NextRequest) {
     response.cookies.delete(sessionCookieName);
     
     // If they were trying to access a protected route, redirect them to login.
-    if (pathname.startsWith('/settings') || pathname.startsWith('/start')) {
+    if (pathname.startsWith('/settings')) {
         const loginUrl = new URL('/login', request.url);
         // We need to return a redirect response, not just the response with the deleted cookie.
         return NextResponse.redirect(loginUrl);
