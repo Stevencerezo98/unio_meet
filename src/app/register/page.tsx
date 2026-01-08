@@ -41,6 +41,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { auth, firestore } = useFirebase();
 
@@ -58,7 +59,8 @@ export default function RegisterPage() {
 
       const userProfile = {
         id: user.uid,
-        displayName: username,
+        username: username,
+        displayName: displayName,
         email: user.email,
         profilePictureUrl: '', // Default empty avatar
       };
@@ -102,12 +104,22 @@ export default function RegisterPage() {
         <CardContent>
           <form onSubmit={handleRegister} className="space-y-4">
              <div className="space-y-2">
-              <Label htmlFor="username">Nombre de Usuario</Label>
+              <Label htmlFor="username">Nombre de usuario (único)</Label>
               <Input
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="tu-nombre-de-usuario"
+                placeholder="ej: steven98"
+                required
+              />
+            </div>
+             <div className="space-y-2">
+              <Label htmlFor="displayName">Nombre para mostrar</Label>
+              <Input
+                id="displayName"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="ej: Steven"
                 required
               />
             </div>

@@ -1,0 +1,164 @@
+
+{
+  "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents a user profile within the Unio Premium video platform, storing customizable user information.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserProfile entity. Corresponds to Firebase Auth UID."
+        },
+        "username": {
+          "type": "string",
+          "description": "The user's unique, public-facing username or handle."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The user's display name in the Unio video platform, shown in meetings."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        },
+        "profilePictureUrl": {
+          "type": "string",
+          "description": "Data URL of the user's profile picture."
+        }
+      },
+      "required": [
+        "id",
+        "username",
+        "displayName",
+        "email"
+      ]
+    },
+    "MeetingRoom": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MeetingRoom",
+      "type": "object",
+      "description": "Represents a meeting room configuration within the Unio Premium video platform.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the MeetingRoom entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the meeting room."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the meeting room's purpose or topic."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "The date and time the meeting room was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "The date and time the meeting room was last updated.",
+          "format": "date-time"
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "Reference to UserProfile. The user who created the meeting room. (Relationship: UserProfile 1:N MeetingRoom)"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "createdAt",
+        "ownerId"
+      ]
+    },
+    "MeetingHistory": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MeetingHistory",
+      "type": "object",
+      "description": "Represents a single entry in a user's meeting history.",
+      "properties": {
+        "roomName": {
+          "type": "string",
+          "description": "The name of the room the user joined."
+        },
+        "joinedAt": {
+          "type": "string",
+          "description": "The timestamp when the user joined the room.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "roomName",
+        "joinedAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user profile information. Path-based ownership is enforced via the 'userId' path parameter.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user. Corresponds to the Firebase Authentication UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/meetingHistory/{historyId}",
+        "definition": {
+          "entityName": "MeetingHistory",
+          "schema": {
+            "$ref": "#/backend/entities/MeetingHistory"
+          },
+          "description": "Stores the meeting history for a specific user. Access is restricted to the user themselves.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The UID of the user who owns this history."
+            },
+            {
+              "name": "historyId",
+              "description": "A unique ID for the history entry."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/meetingRooms/{meetingRoomId}",
+        "definition": {
+          "entityName": "MeetingRoom",
+          "schema": {
+            "$ref": "#/backend/entities/MeetingRoom"
+          },
+          "description": "Stores meeting room configurations. Includes the 'ownerId' field which is used to control access based on user ownership. The ownerId attribute allows enforcing simple security rules without relying on parent document reads.",
+          "params": [
+            {
+              "name": "meetingRoomId",
+              "description": "The unique identifier of the meeting room."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to manage user profiles and meeting rooms within the Unio Premium video platform.  It prioritizes Authorization Independence by ensuring that access control information is directly associated with each document, avoiding the need for complex hierarchical `get()` calls in security rules. This is achieved through path-based ownership and denormalization. The structure also facilitates QAPs through structural segregation by storing user profiles and meeting rooms in separate collections with appropriate security constraints.\n\nSpecifically, `UserProfile` data is stored under `/users/{userId}` ensuring path-based ownership. `MeetingRoom` documents are stored under `/meetingRooms/{meetingRoomId}` with the `ownerId` field denormalized, enabling simple, robust security rules based on `request.auth.uid` and the `ownerId`.\n A `meetingHistory` subcollection is added under each user's document to store their personal meeting history, ensuring data privacy and easy querying per user."
+  }
+}
