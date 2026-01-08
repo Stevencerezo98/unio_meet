@@ -15,6 +15,7 @@ import { doc, collection, serverTimestamp } from 'firebase/firestore';
 import { updateDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 const ANONYMOUS_PREFS_KEY = 'unio-anonymous-prefs';
+const AVATAR_SESSION_KEY = 'unio-avatar-url';
 
 interface AnonymousPrefs {
     displayName: string;
@@ -144,15 +145,23 @@ export default function LobbyRoom() {
     // 2. Stop media tracks
     streamRef.current?.getTracks().forEach((track) => track.stop());
 
-    // 3. Navigate to meeting
+    // 3. Save avatar to session storage before navigating
+    if (avatarUrl) {
+      try {
+        sessionStorage.setItem(AVATAR_SESSION_KEY, avatarUrl);
+      } catch (e) {
+        console.error("Could not save avatar to session storage", e);
+      }
+    } else {
+        sessionStorage.removeItem(AVATAR_SESSION_KEY);
+    }
+
+    // 4. Navigate to meeting with clean URL
     const query = new URLSearchParams({
       audioMuted: String(isAudioMuted),
       videoMuted: String(isVideoMuted || !hasPermissions),
       displayName: displayName,
     });
-    if (avatarUrl) {
-      query.set('avatarUrl', avatarUrl);
-    }
     
     router.push(`/meeting/${params.roomName}?${query.toString()}`);
   };
@@ -252,7 +261,7 @@ export default function LobbyRoom() {
                                 {displayName?.charAt(0).toUpperCase() || '?'}
                             </AvatarFallback>
                         </Avatar>
-                        <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full p-1.5 border-2 border-background cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                        <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full p-1.5 border-2 border-background cursor-pointer" onClick={() => fileInputrodent?.click()}>
                            <Pencil className="h-3 w-3" />
                         </div>
                         <input 

@@ -3,20 +3,34 @@
 
 import MeetingRoom from '@/components/MeetingRoom';
 import { useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 
+const AVATAR_SESSION_KEY = 'unio-avatar-url';
 
 function MeetingPageContent({ params }: { params: { roomName: string } }) {
   const searchParams = useSearchParams();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
 
-  // For all users (registered or anonymous), we get displayName and avatarUrl from URL params.
+  // We need to read from sessionStorage in a useEffect to ensure it runs on the client.
+  useEffect(() => {
+    try {
+      const storedAvatar = sessionStorage.getItem(AVATAR_SESSION_KEY);
+      if (storedAvatar) {
+        setAvatarUrl(storedAvatar);
+        // Clean up the session storage after reading
+        sessionStorage.removeItem(AVATAR_SESSION_KEY);
+      }
+    } catch (e) {
+      console.error("Could not read avatar from session storage", e);
+    }
+  }, []);
+
+  // Get other details from URL params as before.
   const displayName = searchParams.get('displayName') || 'Invitado';
-  const avatarUrl = searchParams.get('avatarUrl') || undefined;
-
   const audioMuted = searchParams.get('audioMuted') === 'true';
   const videoMuted = searchParams.get('videoMuted') === 'true';
   
