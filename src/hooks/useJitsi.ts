@@ -45,10 +45,10 @@ export function useJitsi({
       width: '100%',
       height: '100%',
       configOverwrite: {
-        startWithAudioMuted: startWithAudioMuted,
-        startWithVideoMuted: startWithVideoMuted,
         // CRUCIAL: Disable Jitsi's own prejoin page to avoid conflicts with our lobby
         prejoinPageEnabled: false, 
+        startWithAudioMuted: startWithAudioMuted,
+        startWithVideoMuted: startWithVideoMuted,
         disableDeepLinking: true,
         enableWelcomePage: false,
         transcribingEnabled: false,
