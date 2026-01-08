@@ -39,7 +39,7 @@ export function useJitsi({
     
     const decodedRoomName = decodeURIComponent(roomName);
 
-    const jitsiApi = new window.JitsiMeetExternalAPI(domain, {
+    const options = {
       roomName: decodedRoomName,
       parentNode: parentNode.current,
       width: '100%',
@@ -75,7 +75,9 @@ export function useJitsi({
       onload: () => {
         setApiReady(true);
       }
-    });
+    };
+
+    const jitsiApi = new window.JitsiMeetExternalAPI(domain, options);
 
     jitsiApi.on('videoConferenceJoined', () => {
        if (displayName) {
