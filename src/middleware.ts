@@ -2,12 +2,12 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getAuth } from 'firebase-admin/auth';
-import { credential } from 'firebase-admin';
-import { initializeApp, getApps } from 'firebase-admin/app';
+import { initializeApp, getApps, getApp } from 'firebase-admin/app';
 
 export const runtime = 'nodejs';
 
 // Initialize Firebase Admin SDK if not already initialized
+// This pattern is safer for environments like Next.js middleware
 if (!getApps().length) {
   initializeApp();
 }
@@ -15,8 +15,8 @@ if (!getApps().length) {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // Get Auth instance safely
-  const auth = getAuth();
+  // Get Auth instance safely by passing the initialized app
+  const auth = getAuth(getApps()[0]);
   
   const sessionCookieName = '__session';
 
