@@ -1,45 +1,28 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getAuth, type DecodedIdToken } from 'firebase-admin/auth';
-import { initializeApp, getApps, getApp } from 'firebase-admin/app';
 
+// This middleware runs on the Node.js runtime.
 export const runtime = 'nodejs';
-
-// Initialize Firebase Admin SDK if not already initialized
-if (!getApps().length) {
-  initializeApp();
-}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const auth = getAuth(getApp());
   
   // Use the standard cookie name for Firebase Auth session cookies
   const sessionCookie = request.cookies.get('__session')?.value;
 
   // --- Logic for already logged-in users ---
   if (sessionCookie) {
-    try {
-      // Verify the cookie is valid
-      await auth.verifySessionCookie(sessionCookie, true);
-      
-      // If user is logged in and tries to access login or register, redirect to start
-      if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
-        return NextResponse.redirect(new URL('/start', request.url));
-      }
-
-    } catch (error) {
-      // Invalid cookie. Clear it and proceed.
-      const response = NextResponse.next();
-      response.cookies.delete('__session');
-      return response;
+    // If a logged-in user tries to access login or register, redirect them to the start page.
+    if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
+      return NextResponse.redirect(new URL('/start', request.url));
     }
   }
 
   // --- Logic for users who are NOT logged in ---
   if (!sessionCookie) {
-      // If a non-logged-in user tries to access /settings, redirect them to login.
+      // If a non-logged-in user tries to access /settings, redirect them to the login page.
+      // This is a server-side backup to the client-side protection.
       if (pathname.startsWith('/settings')) {
           return NextResponse.redirect(new URL('/login', request.url));
       }
