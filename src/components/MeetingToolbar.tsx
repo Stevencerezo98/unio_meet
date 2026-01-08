@@ -63,7 +63,7 @@ const ToolbarButton = ({
         variant={variant}
         size="icon"
         onClick={() => { onClick(); hapticFeedback(); }}
-        className={`rounded-full h-12 w-12 md:h-14 md:w-14 transition-colors duration-300 ${
+        className={`rounded-full h-12 w-12 shrink-0 transition-colors duration-300 ${
           isActive
             ? 'bg-primary/80 hover:bg-primary text-primary-foreground'
             : variant === 'destructive'
@@ -74,7 +74,7 @@ const ToolbarButton = ({
         {children}
       </Button>
     </TooltipTrigger>
-    <TooltipContent>
+    <TooltipContent side="right">
       <p>{label}</p>
     </TooltipContent>
   </Tooltip>
@@ -96,18 +96,18 @@ const ReactionsPopover = ({ onReactionClick }: { onReactionClick: (reaction: str
                     <PopoverTrigger asChild>
                         <Button
                             size="icon"
-                            className="rounded-full h-12 w-12 md:h-14 md:w-14 bg-black/40 hover:bg-black/60 text-white"
+                            className="rounded-full h-12 w-12 shrink-0 bg-black/40 hover:bg-black/60 text-white"
                              onClick={hapticFeedback}
                         >
                             <Smile className="h-6 w-6" />
                         </Button>
                     </PopoverTrigger>
                 </TooltipTrigger>
-                <TooltipContent>
+                <TooltipContent side="right">
                     <p>Reacciones</p>
                 </TooltipContent>
             </Tooltip>
-            <PopoverContent className="w-auto bg-background/80 backdrop-blur-md border-border p-2">
+            <PopoverContent side="left" className="w-auto bg-background/80 backdrop-blur-md border-border p-2">
                 <div className="flex gap-2">
                     {reactions.map((r) => (
                         <Button
@@ -155,15 +155,17 @@ export default function MeetingToolbar({
 
   return (
     <motion.div 
-        className="fixed bottom-0 left-1/2 -translate-x-1/2 z-50 w-full pb-4 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]"
-        initial={{ y: "100%", opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
+        className="fixed z-50 p-4 
+                   md:bottom-0 md:left-1/2 md:-translate-x-1/2 md:w-full md:pb-[calc(1rem+env(safe-area-inset-bottom))]
+                   left-0 top-1/2 -translate-y-1/2 h-full pl-[calc(1rem+env(safe-area-inset-left))]"
+        initial={{ x: "-100%", opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.3, delay: 0.5 }}
     >
         <TooltipProvider>
-            <div className="flex flex-col md:flex-row items-center justify-center gap-3">
-            {/* Main Controls - Mic, Video, Hangup */}
-            <div className="flex items-center justify-center gap-3 rounded-full bg-black/30 backdrop-blur-md p-2 border border-neutral-700/50 shadow-2xl">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-3 h-full md:h-auto">
+            
+            <div className="flex flex-col md:flex-row items-center justify-center gap-3 rounded-full bg-black/30 backdrop-blur-md p-2 border border-neutral-700/50 shadow-2xl">
                 <ToolbarButton onClick={toggleAudio} label={isAudioMuted ? 'Unmute' : 'Mute'}>
                 {isAudioMuted ? <MicOff className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
                 </ToolbarButton>
@@ -172,49 +174,52 @@ export default function MeetingToolbar({
                 {isVideoMuted ? <VideoOff className="h-6 w-6" /> : <Video className="h-6 w-6" />}
                 </ToolbarButton>
                 
-                <ToolbarButton onClick={hangup} label="Leave Meeting" variant="destructive">
-                <PhoneOff className="h-6 w-6" />
+                 <ToolbarButton
+                    onClick={toggleShareScreen}
+                    label={isScreenSharing ? 'Stop Sharing' : 'Share Screen'}
+                    isActive={isScreenSharing}
+                    >
+                    {isScreenSharing ? (
+                        <ScreenShareOff className="h-6 w-6" />
+                    ) : (
+                        <ScreenShare className="h-6 w-6" />
+                    )}
                 </ToolbarButton>
             </div>
 
-            {/* Secondary Controls - Share, Reactions, etc. */}
-            <div className="flex items-center justify-center gap-3 rounded-full bg-black/30 backdrop-blur-md p-2 border border-neutral-700/50 shadow-2xl">
-                <ToolbarButton
-                onClick={toggleShareScreen}
-                label={isScreenSharing ? 'Stop Sharing' : 'Share Screen'}
-                isActive={isScreenSharing}
-                className="hidden sm:inline-flex"
-                >
-                {isScreenSharing ? (
-                    <ScreenShareOff className="h-6 w-6" />
-                ) : (
-                    <ScreenShare className="h-6 w-6" />
-                )}
-                </ToolbarButton>
-                
-                <ToolbarButton
-                onClick={handleCopyLink}
-                label="Copiar enlace de invitación"
-                >
-                <Share2 className="h-6 w-6" />
-                </ToolbarButton>
+            <div className="flex-grow md:flex-grow-0" />
 
+
+            <div className="flex flex-col md:flex-row items-center justify-center gap-3 rounded-full bg-black/30 backdrop-blur-md p-2 border border-neutral-700/50 shadow-2xl">
                 <ReactionsPopover onReactionClick={sendReaction} />
 
                 <ToolbarButton
-                onClick={toggleTileView}
-                label={isTileView ? 'Switch to Speaker View' : 'Switch to Tile View'}
-                isActive={isTileView}
-                >
-                <LayoutGrid className="h-6 w-6" />
+                    onClick={toggleTileView}
+                    label={isTileView ? 'Switch to Speaker View' : 'Switch to Tile View'}
+                    isActive={isTileView}
+                    >
+                    <LayoutGrid className="h-6 w-6" />
                 </ToolbarButton>
 
                 <ToolbarButton
-                onClick={toggleSidebar}
-                label={isSidebarOpen ? 'Hide Participants' : 'Show Participants'}
-                isActive={isSidebarOpen}
+                    onClick={toggleSidebar}
+                    label={isSidebarOpen ? 'Hide Participants' : 'Show Participants'}
+                    isActive={isSidebarOpen}
+                    >
+                    <Users className="h-6 w-6" />
+                </ToolbarButton>
+                 <ToolbarButton
+                    onClick={handleCopyLink}
+                    label="Copiar enlace de invitación"
                 >
-                <Users className="h-6 w-6" />
+                    <Share2 className="h-6 w-6" />
+                </ToolbarButton>
+            </div>
+             <div className="flex-grow md:flex-grow-0" />
+
+             <div className="flex items-center justify-center gap-3 rounded-full bg-black/30 backdrop-blur-md p-2 border border-neutral-700/50 shadow-2xl">
+                 <ToolbarButton onClick={hangup} label="Leave Meeting" variant="destructive">
+                    <PhoneOff className="h-6 w-6" />
                 </ToolbarButton>
             </div>
             </div>
