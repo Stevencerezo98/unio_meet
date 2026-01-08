@@ -3,13 +3,13 @@
 
 import MeetingRoom from '@/components/MeetingRoom';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, use } from 'react';
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 
 const AVATAR_SESSION_KEY = 'unio-avatar-url';
 
-function MeetingPageContent({ params }: { params: { roomName: string } }) {
+function MeetingPageContent({ roomName }: { roomName: string }) {
   const searchParams = useSearchParams();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
@@ -42,14 +42,14 @@ function MeetingPageContent({ params }: { params: { roomName: string } }) {
   // Though the lobby should handle this, it's a good failsafe.
   // In a real-world scenario, the lobby would have already created an anonymous session.
   if (!user) {
-      router.replace(`/lobby/${params.roomName}`);
+      router.replace(`/lobby/${roomName}`);
       return null;
   }
 
   return (
     <main>
       <MeetingRoom
-        roomName={params.roomName}
+        roomName={roomName}
         displayName={displayName}
         avatarUrl={avatarUrl}
         startWithAudioMuted={audioMuted}
@@ -62,11 +62,14 @@ function MeetingPageContent({ params }: { params: { roomName: string } }) {
 export default function MeetingPage({
   params,
 }: {
-  params: { roomName: string };
+  params: Promise<{ roomName: string }>;
 }) {
+  // React.use() unwraps the promise returned by Next.js 15 for params
+  const { roomName } = use(params);
+
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <MeetingPageContent params={params} />
+      <MeetingPageContent roomName={roomName} />
     </Suspense>
   );
 }

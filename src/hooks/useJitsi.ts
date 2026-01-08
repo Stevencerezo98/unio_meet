@@ -2,7 +2,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import type { JitsiApi } from '@/lib/types';
 
 interface UseJitsiProps {
   roomName: string;
@@ -34,8 +33,12 @@ export function useJitsi({
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.JitsiMeetExternalAPI || !parentNode.current) {
+      console.warn("Jitsi API script not loaded or parentNode not available");
       return;
     }
+    
+    // Ensure parent node is empty before creating a new Jitsi instance
+    parentNode.current.innerHTML = '';
     
     const decodedRoomName = decodeURIComponent(roomName);
 
@@ -45,10 +48,9 @@ export function useJitsi({
       width: '100%',
       height: '100%',
       configOverwrite: {
-        // CRUCIAL: Disable Jitsi's own prejoin page to avoid conflicts with our lobby
-        prejoinPageEnabled: false, 
-        startWithAudioMuted: startWithAudioMuted,
-        startWithVideoMuted: startWithVideoMuted,
+        prejoinPageEnabled: false,
+        startWithAudioMuted,
+        startWithVideoMuted,
         disableDeepLinking: true,
         enableWelcomePage: false,
         transcribingEnabled: false,
@@ -57,7 +59,6 @@ export function useJitsi({
         fileRecordingsEnabled: false,
       },
       interfaceConfigOverwrite: {
-        // --- Branding Removal ---
         SHOW_JITSI_WATERMARK: false,
         SHOW_WATERMARK_FOR_GUESTS: false,
         SHOW_BRAND_WATERMARK: false,
@@ -65,12 +66,14 @@ export function useJitsi({
         JITSI_WATERMARK_LINK: '',
         BRAND_WATERMARK_LINK: '',
         SHOW_POWERED_BY: false,
-        
-        // --- UI Customization ---
         SETTINGS_SECTIONS: ['devices', 'language', 'profile', 'moderator'],
         SHOW_CHROME_EXTENSION_BANNER: false,
         TILE_VIEW_MAX_COLUMNS: 5,
         DISABLE_VIDEO_BACKGROUND: false,
+      },
+      userInfo: {
+        displayName: displayName,
+        avatar: avatarUrl,
       },
       onload: () => {
         setApiReady(true);
@@ -78,7 +81,7 @@ export function useJitsi({
     };
 
     const jitsiApi = new window.JitsiMeetExternalAPI(domain, options);
-
+    
     jitsiApi.on('videoConferenceJoined', () => {
        if (displayName) {
         jitsiApi.executeCommand('displayName', displayName);
