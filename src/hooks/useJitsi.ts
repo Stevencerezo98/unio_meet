@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface UseJitsiProps {
   roomName: string;
@@ -19,19 +19,20 @@ export function useJitsi({
   displayName,
   avatarUrl,
 }: UseJitsiProps) {
-  const [isApiReady, setApiReady] = useState(false);
+  // Use a ref to hold the onMeetingEnd callback to avoid re-running the effect when it changes.
   const onMeetingEndRef = useRef(onMeetingEnd);
-  
   useEffect(() => {
     onMeetingEndRef.current = onMeetingEnd;
   }, [onMeetingEnd]);
 
   useEffect(() => {
+    // Ensure the Jitsi API is available and we have a DOM node to attach to.
     if (typeof window === 'undefined' || !window.JitsiMeetExternalAPI || !parentNode.current) {
       console.warn("Jitsi API script not loaded or parentNode not available");
       return;
     }
     
+    // Clear any previous Jitsi instance
     parentNode.current.innerHTML = '';
     
     const decodedRoomName = decodeURIComponent(roomName);
@@ -41,38 +42,36 @@ export function useJitsi({
       parentNode: parentNode.current,
       width: '100%',
       height: '100%',
-      configOverwrite: {
-        prejoinPageEnabled: true, // Use Jitsi's native prejoin screen
-        disableDeepLinking: true, // Crucial for mobile browser experience
-        enableWelcomePage: false,
-      },
-      interfaceConfigOverwrite: {
-        // All UI customization is removed to allow the native Jitsi UI to show.
-        // The branding will be handled server-side as requested.
-      },
+      // We pass user info directly to Jitsi's native UI.
       userInfo: {
         displayName: displayName,
-        avatar: avatarUrl,
+        avatar: avatarUrl, // Correctly pass the avatarUrl
       },
-      onload: () => {
-        setApiReady(true);
-      }
+      // Minimal config, relying on server-side settings for branding.
+      configOverwrite: {},
+      interfaceConfigOverwrite: {},
     };
 
+    // Initialize the Jitsi API.
     const jitsiApi = new window.JitsiMeetExternalAPI(domain, options);
 
-    // This listener ensures that hanging up redirects correctly.
+    // Add a listener for when the user hangs up.
+    // This event fires when the meeting is terminated from the Jitsi UI.
     jitsiApi.on('readyToClose', () => {
+      // Call the cleanup callback, which should handle redirection.
       onMeetingEndRef.current?.();
     });
     
+    // Cleanup function to dispose of the Jitsi API instance when the component unmounts.
     return () => {
       if(jitsiApi) {
         jitsiApi.dispose();
       }
     };
+    // The effect should re-run if the core meeting parameters change.
   }, [roomName, domain, parentNode, displayName, avatarUrl]);
   
 
-  return { isApiReady };
+  // This hook no longer needs to return a loading state, as Jitsi handles its own UI.
+  return {};
 }
