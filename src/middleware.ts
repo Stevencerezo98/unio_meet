@@ -1,13 +1,22 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { auth } from './firebase/server';
+import { getAuth } from 'firebase-admin/auth';
+import { credential } from 'firebase-admin';
+import { initializeApp, getApps } from 'firebase-admin/app';
 
-export const runtime = 'nodejs'; // Add this line
+export const runtime = 'nodejs';
+
+// Initialize Firebase Admin SDK if not already initialized
+if (!getApps().length) {
+  initializeApp();
+}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
+  const auth = getAuth();
+  const sessionCookieName = '__session';
+
   const unprotectedRoutes = [
     '/',
     '/login',
@@ -20,9 +29,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // The 'session' cookie is a custom name for the session cookie.
-  // You can name it anything you want.
-  const sessionCookie = request.cookies.get(auth.SESSION_COOKIE_NAME)?.value
+  const sessionCookie = request.cookies.get(sessionCookieName)?.value;
+
   if (!sessionCookie) {
     if (pathname.startsWith('/settings') || pathname.startsWith('/start')) {
         return NextResponse.redirect(new URL('/login', request.url));
@@ -31,7 +39,7 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
-    const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
+    await auth.verifySessionCookie(sessionCookie, true);
     
     // If the user is logged in and tries to access login/register, redirect them.
     if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
@@ -42,7 +50,7 @@ export async function middleware(request: NextRequest) {
   } catch (error) {
     // Session cookie is invalid. Clear it and redirect to login for protected routes.
     const response = NextResponse.next();
-    response.cookies.delete(auth.SESSION_COOKIE_NAME);
+    response.cookies.delete(sessionCookieName);
     
     if (pathname.startsWith('/settings') || pathname.startsWith('/start')) {
         return NextResponse.redirect(new URL('/login', request.url));
