@@ -43,7 +43,7 @@ export function useJitsi({
       width: '100%',
       height: '100%',
       configOverwrite: {
-        prejoinPageEnabled: true, // Use Jitsi's pre-join screen
+        prejoinPageEnabled: true,
         disableDeepLinking: true,
         enableWelcomePage: false,
         transcribingEnabled: false,

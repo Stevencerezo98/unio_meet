@@ -29,7 +29,6 @@ function MeetingPageContent({ roomName }: { roomName: string }) {
       setDisplayName(userProfile.displayName || user.email || 'Usuario');
       setAvatarUrl(userProfile.profilePictureUrl || undefined);
     } else if (user?.isAnonymous) {
-      // Logic for anonymous users if you store their prefs somewhere like localStorage
       const anonPrefs = localStorage.getItem('unio-anonymous-prefs');
       if (anonPrefs) {
         const { displayName: anonName, avatarUrl: anonAvatar } = JSON.parse(anonPrefs);
