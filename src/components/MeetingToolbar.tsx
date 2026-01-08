@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
+import { motion } from 'framer-motion';
 
 interface MeetingToolbarProps {
   isAudioMuted: boolean;
@@ -153,66 +154,75 @@ export default function MeetingToolbar({
   };
 
   return (
-    <div className="fixed bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 z-50 pb-[env(safe-area-inset-bottom)]">
-      <TooltipProvider>
-        <div className="flex flex-col md:flex-row items-center justify-center gap-3">
-          {/* Main Controls - Mic, Video, Hangup */}
-          <div className="flex items-center justify-center gap-3 rounded-full bg-black/30 backdrop-blur-md p-2 border border-neutral-700/50 shadow-2xl">
-            <ToolbarButton onClick={toggleAudio} label={isAudioMuted ? 'Unmute' : 'Mute'}>
-              {isAudioMuted ? <MicOff className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
-            </ToolbarButton>
+    <motion.div 
+        className="fixed bottom-0 left-1/2 -translate-x-1/2 z-50 w-full pb-[env(safe-area-inset-bottom)]"
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.3 }}
+    >
+        <div className="group absolute bottom-0 left-0 right-0 h-40">
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <TooltipProvider>
+                    <div className="flex flex-col md:flex-row items-center justify-center gap-3">
+                    {/* Main Controls - Mic, Video, Hangup */}
+                    <div className="flex items-center justify-center gap-3 rounded-full bg-black/30 backdrop-blur-md p-2 border border-neutral-700/50 shadow-2xl">
+                        <ToolbarButton onClick={toggleAudio} label={isAudioMuted ? 'Unmute' : 'Mute'}>
+                        {isAudioMuted ? <MicOff className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
+                        </ToolbarButton>
 
-            <ToolbarButton onClick={toggleVideo} label={isVideoMuted ? 'Start Video' : 'Stop Video'}>
-              {isVideoMuted ? <VideoOff className="h-6 w-6" /> : <Video className="h-6 w-6" />}
-            </ToolbarButton>
-            
-            <ToolbarButton onClick={hangup} label="Leave Meeting" variant="destructive">
-              <PhoneOff className="h-6 w-6" />
-            </ToolbarButton>
-          </div>
+                        <ToolbarButton onClick={toggleVideo} label={isVideoMuted ? 'Start Video' : 'Stop Video'}>
+                        {isVideoMuted ? <VideoOff className="h-6 w-6" /> : <Video className="h-6 w-6" />}
+                        </ToolbarButton>
+                        
+                        <ToolbarButton onClick={hangup} label="Leave Meeting" variant="destructive">
+                        <PhoneOff className="h-6 w-6" />
+                        </ToolbarButton>
+                    </div>
 
-          {/* Secondary Controls - Share, Reactions, etc. */}
-           <div className="flex items-center justify-center gap-3 rounded-full bg-black/30 backdrop-blur-md p-2 border border-neutral-700/50 shadow-2xl">
-            <ToolbarButton
-              onClick={toggleShareScreen}
-              label={isScreenSharing ? 'Stop Sharing' : 'Share Screen'}
-              isActive={isScreenSharing}
-              className="hidden sm:inline-flex"
-            >
-              {isScreenSharing ? (
-                <ScreenShareOff className="h-6 w-6" />
-              ) : (
-                <ScreenShare className="h-6 w-6" />
-              )}
-            </ToolbarButton>
-            
-            <ToolbarButton
-              onClick={handleCopyLink}
-              label="Copiar enlace de invitación"
-            >
-              <Share2 className="h-6 w-6" />
-            </ToolbarButton>
+                    {/* Secondary Controls - Share, Reactions, etc. */}
+                    <div className="flex items-center justify-center gap-3 rounded-full bg-black/30 backdrop-blur-md p-2 border border-neutral-700/50 shadow-2xl">
+                        <ToolbarButton
+                        onClick={toggleShareScreen}
+                        label={isScreenSharing ? 'Stop Sharing' : 'Share Screen'}
+                        isActive={isScreenSharing}
+                        className="hidden sm:inline-flex"
+                        >
+                        {isScreenSharing ? (
+                            <ScreenShareOff className="h-6 w-6" />
+                        ) : (
+                            <ScreenShare className="h-6 w-6" />
+                        )}
+                        </ToolbarButton>
+                        
+                        <ToolbarButton
+                        onClick={handleCopyLink}
+                        label="Copiar enlace de invitación"
+                        >
+                        <Share2 className="h-6 w-6" />
+                        </ToolbarButton>
 
-            <ReactionsPopover onReactionClick={sendReaction} />
+                        <ReactionsPopover onReactionClick={sendReaction} />
 
-            <ToolbarButton
-              onClick={toggleTileView}
-              label={isTileView ? 'Switch to Speaker View' : 'Switch to Tile View'}
-              isActive={isTileView}
-            >
-              <LayoutGrid className="h-6 w-6" />
-            </ToolbarButton>
+                        <ToolbarButton
+                        onClick={toggleTileView}
+                        label={isTileView ? 'Switch to Speaker View' : 'Switch to Tile View'}
+                        isActive={isTileView}
+                        >
+                        <LayoutGrid className="h-6 w-6" />
+                        </ToolbarButton>
 
-            <ToolbarButton
-              onClick={toggleSidebar}
-              label={isSidebarOpen ? 'Hide Participants' : 'Show Participants'}
-              isActive={isSidebarOpen}
-            >
-              <Users className="h-6 w-6" />
-            </ToolbarButton>
-           </div>
+                        <ToolbarButton
+                        onClick={toggleSidebar}
+                        label={isSidebarOpen ? 'Hide Participants' : 'Show Participants'}
+                        isActive={isSidebarOpen}
+                        >
+                        <Users className="h-6 w-6" />
+                        </ToolbarButton>
+                    </div>
+                    </div>
+                </TooltipProvider>
+            </div>
         </div>
-      </TooltipProvider>
-    </div>
+    </motion.div>
   );
 }
