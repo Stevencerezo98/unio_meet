@@ -32,7 +32,6 @@ export function useJitsi({
       return;
     }
     
-    // Ensure parent node is empty before creating a new Jitsi instance
     parentNode.current.innerHTML = '';
     
     const decodedRoomName = decodeURIComponent(roomName);
@@ -43,26 +42,13 @@ export function useJitsi({
       width: '100%',
       height: '100%',
       configOverwrite: {
-        prejoinPageEnabled: true,
-        disableDeepLinking: true,
+        prejoinPageEnabled: true, // Use Jitsi's native prejoin screen
+        disableDeepLinking: true, // Crucial for mobile browser experience
         enableWelcomePage: false,
-        transcribingEnabled: false,
-        recordingService: { enabled: false },
-        liveStreaming: { enabled: false },
-        fileRecordingsEnabled: false,
       },
       interfaceConfigOverwrite: {
-        SHOW_JITSI_WATERMARK: false,
-        SHOW_WATERMARK_FOR_GUESTS: false,
-        SHOW_BRAND_WATERMARK: false,
-        SHOW_POWERED_BY_WATERMARK: false,
-        JITSI_WATERMARK_LINK: '',
-        BRAND_WATERMARK_LINK: '',
-        SHOW_POWERED_BY: false,
-        SETTINGS_SECTIONS: ['devices', 'language', 'profile', 'moderator'],
-        SHOW_CHROME_EXTENSION_BANNER: false,
-        TILE_VIEW_MAX_COLUMNS: 5,
-        DISABLE_VIDEO_BACKGROUND: false,
+        // All UI customization is removed to allow the native Jitsi UI to show.
+        // The branding will be handled server-side as requested.
       },
       userInfo: {
         displayName: displayName,
@@ -75,7 +61,7 @@ export function useJitsi({
 
     const jitsiApi = new window.JitsiMeetExternalAPI(domain, options);
 
-    // This listener will fire when the user clicks to hang up.
+    // This listener ensures that hanging up redirects correctly.
     jitsiApi.on('readyToClose', () => {
       onMeetingEndRef.current?.();
     });
@@ -85,7 +71,6 @@ export function useJitsi({
         jitsiApi.dispose();
       }
     };
-  // We remove startWithAudio/VideoMuted as Jitsi's prejoin screen will handle this
   }, [roomName, domain, parentNode, displayName, avatarUrl]);
   
 
