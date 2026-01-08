@@ -69,6 +69,7 @@ export default function SettingsPage() {
   
   const [displayName, setDisplayName] = useState('');
   const [username, setUsername] = useState('');
+  const [hasExistingUsername, setHasExistingUsername] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -84,6 +85,7 @@ export default function SettingsPage() {
     if (userProfile) {
       setDisplayName(userProfile.displayName || '');
       setUsername(userProfile.username || '');
+      setHasExistingUsername(!!userProfile.username);
       setAvatarUrl(userProfile.profilePictureUrl || null);
       setDefaultAudioMuted(userProfile.defaultAudioMuted || false);
       setDefaultVideoMuted(userProfile.defaultVideoMuted || false);
@@ -114,13 +116,26 @@ export default function SettingsPage() {
         return;
     }
     setIsSavingProfile(true);
-    const updatedData = {
+
+    const updatedData: { [key: string]: any } = {
         displayName: displayName,
         profilePictureUrl: avatarUrl || '',
         defaultAudioMuted: defaultAudioMuted,
         defaultVideoMuted: defaultVideoMuted,
     };
+
+    // Only add username to the update object if it's being set for the first time
+    if (!hasExistingUsername && username.trim()) {
+        updatedData.username = username.trim();
+    }
+
     updateDocumentNonBlocking(userDocRef, updatedData);
+    
+    // Optimistically update UI state for username lock
+    if (!hasExistingUsername && username.trim()) {
+        setHasExistingUsername(true);
+    }
+    
     setIsSavingProfile(false);
     toast({
       title: '¡Perfil Guardado!',
@@ -224,10 +239,17 @@ export default function SettingsPage() {
                   <Input
                     id="username"
                     value={username}
-                    className="h-11 text-base bg-muted"
-                    readOnly
-                    disabled
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="h-11 text-base"
+                    readOnly={hasExistingUsername}
+                    disabled={hasExistingUsername}
                   />
+                  {!hasExistingUsername && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5 pt-1">
+                        <Info className="h-3.5 w-3.5" />
+                        Una vez establecido, no podrás cambiarlo sin contactar a soporte.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -314,3 +336,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+
