@@ -3,17 +3,18 @@
 
 import { useState, useRef, useEffect, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Pencil, LogOut, Loader2 } from 'lucide-react';
+import { ArrowLeft, Pencil, LogOut, Loader2, Mic, Video, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useFirebase, useUser, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { signOut, updateEmail, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
+import { signOut, updateEmail, updatePassword } from 'firebase/auth';
 
 function SettingsHeader() {
   const router = useRouter();
@@ -54,6 +55,9 @@ export default function SettingsPage() {
     if (!isUserLoading && !user) {
       router.replace('/login');
     }
+     if (!isUserLoading && user && user.isAnonymous) {
+      router.replace('/start'); // Anonymous users don't have a settings page
+    }
   }, [user, isUserLoading, router]);
   
   const userDocRef = useMemoFirebase(() => {
@@ -64,9 +68,12 @@ export default function SettingsPage() {
   const { data: userProfile, isLoading: isProfileLoading } = useDoc(userDocRef);
   
   const [displayName, setDisplayName] = useState('');
+  const [username, setUsername] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [defaultAudioMuted, setDefaultAudioMuted] = useState(false);
+  const [defaultVideoMuted, setDefaultVideoMuted] = useState(false);
   
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isSavingAccount, setIsSavingAccount] = useState(false);
@@ -76,7 +83,10 @@ export default function SettingsPage() {
   useEffect(() => {
     if (userProfile) {
       setDisplayName(userProfile.displayName || '');
+      setUsername(userProfile.username || '');
       setAvatarUrl(userProfile.profilePictureUrl || null);
+      setDefaultAudioMuted(userProfile.defaultAudioMuted || false);
+      setDefaultVideoMuted(userProfile.defaultVideoMuted || false);
     }
     if (user) {
         setEmail(user.email || '');
@@ -107,12 +117,14 @@ export default function SettingsPage() {
     const updatedData = {
         displayName: displayName,
         profilePictureUrl: avatarUrl || '',
+        defaultAudioMuted: defaultAudioMuted,
+        defaultVideoMuted: defaultVideoMuted,
     };
     updateDocumentNonBlocking(userDocRef, updatedData);
     setIsSavingProfile(false);
     toast({
       title: '¡Perfil Guardado!',
-      description: 'Tu nombre y avatar han sido actualizados.',
+      description: 'Tus preferencias de perfil han sido actualizadas.',
     });
   };
 
@@ -124,7 +136,6 @@ export default function SettingsPage() {
     setIsSavingAccount(true);
 
     try {
-        // Update Email if changed
         if(email !== auth.currentUser.email) {
             await updateEmail(auth.currentUser, email);
             if(userDocRef) {
@@ -133,10 +144,9 @@ export default function SettingsPage() {
             toast({ title: '¡Email Actualizado!', description: 'Tu dirección de correo ha sido actualizada.' });
         }
 
-        // Update password if provided
         if(password) {
             await updatePassword(auth.currentUser, password);
-            setPassword(''); // Clear password field after update
+            setPassword(''); 
             toast({ title: '¡Contraseña Actualizada!', description: 'Tu contraseña ha sido cambiada exitosamente.' });
         }
 
@@ -158,25 +168,25 @@ export default function SettingsPage() {
     }
   }
 
-  if (isUserLoading || isProfileLoading || !user) {
+  if (isUserLoading || isProfileLoading || !user || user.isAnonymous) {
     return <div className="flex min-h-screen items-center justify-center">Cargando...</div>;
   }
 
   return (
     <div className="flex min-h-screen flex-col items-center bg-background p-4 pt-8 md:pt-16">
       <SettingsHeader />
-      <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-3 gap-8">
 
         {/* Profile Card */}
-        <Card>
+        <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Perfil Público</CardTitle>
+            <CardTitle>Perfil y Preferencias</CardTitle>
             <CardDescription>
-              Este nombre y avatar se mostrarán a otros en las reuniones.
+              Ajusta cómo te ven los demás y tus configuraciones por defecto para las reuniones.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex flex-col items-center space-y-4">
+          <CardContent className="space-y-8">
+            <div className="flex flex-col sm:flex-row items-center gap-6">
               <div className="relative">
                 <Avatar className="h-32 w-32 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                   <AvatarImage src={avatarUrl ?? undefined} />
@@ -198,23 +208,65 @@ export default function SettingsPage() {
                   accept="image/png, image/jpeg, image/webp"
                 />
               </div>
+              <div className="space-y-4 flex-grow w-full">
+                <div className="space-y-2">
+                  <Label htmlFor="displayName">Nombre para mostrar en reuniones</Label>
+                  <Input
+                    id="displayName"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    className="h-11 text-base"
+                    placeholder="Introduce tu nombre público"
+                  />
+                </div>
+                 <div className="space-y-2">
+                  <Label htmlFor="username">Nombre de usuario (único)</Label>
+                  <Input
+                    id="username"
+                    value={username}
+                    className="h-11 text-base bg-muted"
+                    readOnly
+                    disabled
+                  />
+                </div>
+              </div>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="displayName" className="text-base">Tu Nombre</Label>
-              <Input
-                id="displayName"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                className="h-12 text-lg"
-                placeholder="Introduce tu nombre público"
-              />
+            <div className="space-y-4 pt-4 border-t">
+                <h3 className="text-base font-medium">Preferencias de Reunión</h3>
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                        <Label htmlFor="audio-switch" className="flex items-center gap-2">
+                            <Mic className="h-4 w-4" />
+                            Empezar con micrófono silenciado
+                        </Label>
+                    </div>
+                    <Switch
+                        id="audio-switch"
+                        checked={defaultAudioMuted}
+                        onCheckedChange={setDefaultAudioMuted}
+                    />
+                </div>
+                 <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                        <Label htmlFor="video-switch" className="flex items-center gap-2">
+                           <Video className="h-4 w-4" />
+                           Empezar con cámara apagada
+                        </Label>
+                    </div>
+                    <Switch
+                        id="video-switch"
+                        checked={defaultVideoMuted}
+                        onCheckedChange={setDefaultVideoMuted}
+                    />
+                </div>
             </div>
+
           </CardContent>
           <CardFooter>
             <Button onClick={handleProfileSave} className="w-full" disabled={isSavingProfile}>
                 {isSavingProfile && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Guardar Perfil
+                Guardar Perfil y Preferencias
             </Button>
           </CardFooter>
         </Card>
@@ -224,19 +276,18 @@ export default function SettingsPage() {
            <CardHeader>
             <CardTitle>Ajustes de la Cuenta</CardTitle>
             <CardDescription>
-              Gestiona tu email y contraseña de inicio de sesión.
+              Gestiona tu email y contraseña.
             </CardDescription>
           </CardHeader>
            <CardContent className="space-y-6">
                 <div className="space-y-2">
-                    <Label htmlFor="email" className="text-base">Email</Label>
+                    <Label htmlFor="email">Email</Label>
                     <Input
                         id="email"
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="h-12 text-lg"
-                        placeholder="tu@email.com"
+                        className="h-11 text-base"
                     />
                 </div>
                  <div className="space-y-2">
@@ -246,7 +297,7 @@ export default function SettingsPage() {
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="h-12 text-lg"
+                        className="h-11 text-base"
                         placeholder="Dejar en blanco para no cambiar"
                     />
                 </div>

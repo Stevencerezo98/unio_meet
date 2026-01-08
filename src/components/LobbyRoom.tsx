@@ -14,12 +14,19 @@ import { useFirebase, useUser, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, collection, serverTimestamp } from 'firebase/firestore';
 import { updateDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
+const ANONYMOUS_PREFS_KEY = 'unio-anonymous-prefs';
+
+interface AnonymousPrefs {
+    displayName: string;
+    avatarUrl: string | null;
+    isAudioMuted: boolean;
+    isVideoMuted: boolean;
+}
 
 export default function LobbyRoom() {
   const { firestore } = useFirebase();
   const { user } = useUser();
   
-  // User profile is only relevant for registered users
   const userDocRef = useMemoFirebase(() => {
     if (!firestore || !user || user.isAnonymous) return null;
     return doc(firestore, 'users', user.uid);
@@ -29,9 +36,9 @@ export default function LobbyRoom() {
 
   const [displayName, setDisplayName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-
   const [isAudioMuted, setAudioMuted] = useState(true);
   const [isVideoMuted, setVideoMuted] = useState(false);
+  
   const [isLoading, setIsLoading] = useState(true);
   const [hasPermissions, setHasPermissions] = useState(false);
   const [mediaError, setMediaError] = useState<string | null>(null);
@@ -45,15 +52,33 @@ export default function LobbyRoom() {
 
   const roomName = decodeURIComponent(params.roomName as string);
 
+  // Load preferences on component mount
   useEffect(() => {
-    // If the user is registered and we have their profile, use that data.
+    if (isProfileLoading) return; // Wait until we know if we have a profile
+
     if (user && !user.isAnonymous && userProfile) {
+      // Registered user: load from Firestore profile
       setDisplayName(userProfile.displayName || '');
       setAvatarUrl(userProfile.profilePictureUrl || null);
+      setAudioMuted(userProfile.defaultAudioMuted !== undefined ? userProfile.defaultAudioMuted : true);
+      setVideoMuted(userProfile.defaultVideoMuted !== undefined ? userProfile.defaultVideoMuted : false);
     } else if (user) {
-      // For anonymous users or registered users still loading their profile,
-      // provide a default name. They can change it.
-      setDisplayName(user.displayName || 'Invitado');
+      // Anonymous user: load from localStorage
+      try {
+        const savedPrefs = localStorage.getItem(ANONYMOUS_PREFS_KEY);
+        if (savedPrefs) {
+          const { displayName, avatarUrl, isAudioMuted, isVideoMuted } = JSON.parse(savedPrefs) as AnonymousPrefs;
+          setDisplayName(displayName);
+          setAvatarUrl(avatarUrl);
+          setAudioMuted(isAudioMuted);
+          setVideoMuted(isVideoMuted);
+        } else {
+          setDisplayName('Invitado');
+        }
+      } catch (e) {
+          console.error("Failed to parse anonymous preferences", e);
+          setDisplayName('Invitado');
+      }
     }
   }, [userProfile, isProfileLoading, user]);
 
@@ -61,7 +86,7 @@ export default function LobbyRoom() {
   const getMediaPermissions = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
+        video: { facingMode: "user" },
         audio: true,
       });
       streamRef.current = stream;
@@ -69,58 +94,57 @@ export default function LobbyRoom() {
         videoRef.current.srcObject = stream;
       }
       stream.getAudioTracks().forEach((track) => (track.enabled = !isAudioMuted));
+      stream.getVideoTracks().forEach((track) => (track.enabled = !isVideoMuted));
       setHasPermissions(true);
       setMediaError(null);
     } catch (err: any) {
       console.error('Error accessing media devices.', err);
-      let errorMessage = 'Could not access camera or microphone.';
+      let errorMessage = 'No se pudo acceder a la cámara o al micrófono.';
       if (err.name === 'NotAllowedError') {
-        errorMessage = 'Permissions for camera and microphone were denied. Please enable them in your browser settings to use them in the meeting.';
+        errorMessage = 'Permisos denegados. Por favor, habilítalos en los ajustes de tu navegador.';
       } else if (err.name === 'NotFoundError') {
-        errorMessage = 'No camera or microphone found. You can still join the meeting.';
+        errorMessage = 'No se encontró cámara o micrófono. Aún puedes unirte a la reunión.';
       }
       setMediaError(errorMessage);
       setHasPermissions(false);
     } finally {
         setIsLoading(false);
     }
-  }, [isAudioMuted]);
+  }, [isAudioMuted, isVideoMuted]);
 
   useEffect(() => {
     getMediaPermissions();
-
     return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-      }
+      streamRef.current?.getTracks().forEach((track) => track.stop());
     };
   }, [getMediaPermissions]);
 
 
   const handleJoinMeeting = () => {
-    // 1. If user is registered, update their profile and meeting history.
-    if (user && !user.isAnonymous) {
-        if (userDocRef) {
-            updateDocumentNonBlocking(userDocRef, { 
-                displayName: displayName,
-                profilePictureUrl: avatarUrl || ''
-            });
-        }
-        if (firestore) {
+    // 1. Save preferences
+    if (user && !user.isAnonymous && userDocRef) {
+      // Registered user: Save display name and avatar (preferences are saved on settings page)
+      updateDocumentNonBlocking(userDocRef, { 
+          displayName: displayName,
+          profilePictureUrl: avatarUrl || ''
+      });
+       if (firestore) {
           const historyColRef = collection(firestore, 'users', user.uid, 'meetingHistory');
           addDocumentNonBlocking(historyColRef, {
             roomName: roomName,
             joinedAt: serverTimestamp(),
           });
         }
+    } else {
+      // Anonymous user: Save all settings to localStorage
+      const prefsToSave: AnonymousPrefs = { displayName, avatarUrl, isAudioMuted, isVideoMuted };
+      localStorage.setItem(ANONYMOUS_PREFS_KEY, JSON.stringify(prefsToSave));
     }
     
     // 2. Stop media tracks
-    if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-    }
+    streamRef.current?.getTracks().forEach((track) => track.stop());
 
-    // 3. Navigate to meeting, passing display name and avatar for all user types.
+    // 3. Navigate to meeting
     const query = new URLSearchParams({
       audioMuted: String(isAudioMuted),
       videoMuted: String(isVideoMuted || !hasPermissions),
@@ -136,30 +160,23 @@ export default function LobbyRoom() {
   const toggleAudio = () => {
     const newAudioMuted = !isAudioMuted;
     setAudioMuted(newAudioMuted);
-    if(streamRef.current){
-        streamRef.current.getAudioTracks().forEach(track => {
-            track.enabled = !newAudioMuted
-        });
-    }
+    streamRef.current?.getAudioTracks().forEach(track => { track.enabled = !newAudioMuted });
   }
 
   const toggleVideo = () => {
     const newVideoMuted = !isVideoMuted;
     setVideoMuted(newVideoMuted);
-    if(streamRef.current){
-        streamRef.current.getVideoTracks().forEach(track => {
-            track.enabled = !newVideoMuted
-        });
-    }
+    streamRef.current?.getVideoTracks().forEach(track => { track.enabled = !newVideoMuted });
   };
 
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 2 * 1024 * 1024) { // 2MB Limit
+        return;
+      }
       const reader = new FileReader();
-      reader.onload = (event) => {
-        setAvatarUrl(event.target?.result as string);
-      };
+      reader.onload = (event) => setAvatarUrl(event.target?.result as string);
       reader.readAsDataURL(file);
     }
   };
@@ -167,7 +184,7 @@ export default function LobbyRoom() {
   const VideoPreview = () => {
     if (isLoading || isProfileLoading) {
       return (
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-center bg-muted">
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
       );
@@ -179,9 +196,9 @@ export default function LobbyRoom() {
             <VideoOff className="h-16 w-16 text-muted-foreground mb-4" />
             <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Media Error</AlertTitle>
+                <AlertTitle>Error de Medios</AlertTitle>
                 <AlertDescription>
-                    {mediaError || "Could not access camera or microphone."}
+                    {mediaError}
                 </AlertDescription>
             </Alert>
         </div>
@@ -190,19 +207,17 @@ export default function LobbyRoom() {
     
     return (
         <>
-            <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
-            {isVideoMuted && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                    <div className="relative">
-                        <Avatar className="h-24 w-24 border-2 border-background">
-                            <AvatarImage src={avatarUrl ?? undefined} />
-                            <AvatarFallback className="text-4xl">
-                                {displayName?.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                        </Avatar>
-                    </div>
+            <video ref={videoRef} className={`w-full h-full object-cover transition-opacity ${isVideoMuted ? 'opacity-0' : 'opacity-100'}`} autoPlay muted playsInline />
+            <div className={`absolute inset-0 flex items-center justify-center bg-black/50 transition-opacity ${isVideoMuted ? 'opacity-100' : 'opacity-0'}`}>
+                <div className="relative">
+                    <Avatar className="h-24 w-24 border-2 border-background">
+                        <AvatarImage src={avatarUrl ?? undefined} />
+                        <AvatarFallback className="text-4xl">
+                            {displayName?.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                    </Avatar>
                 </div>
-            )}
+            </div>
         </>
     )
   }
@@ -245,7 +260,7 @@ export default function LobbyRoom() {
                             ref={fileInputRef} 
                             onChange={handleAvatarChange} 
                             className="hidden"
-                            accept="image/png, image/jpeg"
+                            accept="image/png, image/jpeg, image/webp"
                         />
                     </div>
                     <Input
@@ -258,7 +273,7 @@ export default function LobbyRoom() {
                 </div>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Este nombre y avatar se mostrarán a los demás en la reunión.</p>
+              <p className="text-sm text-muted-foreground">Este nombre y avatar se mostrarán a los demás y se guardarán para tu próxima visita.</p>
             </div>
           </div>
         </CardContent>

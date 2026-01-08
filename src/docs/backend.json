@@ -5,7 +5,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "UserProfile",
       "type": "object",
-      "description": "Represents a user profile within the Unio Premium video platform, storing customizable user information.",
+      "description": "Represents a user profile within the Unio Premium video platform, storing customizable user information and preferences.",
       "properties": {
         "id": {
           "type": "string",
@@ -27,6 +27,14 @@
         "profilePictureUrl": {
           "type": "string",
           "description": "Data URL of the user's profile picture."
+        },
+        "defaultAudioMuted": {
+            "type": "boolean",
+            "description": "User's preference to start meetings with the microphone muted."
+        },
+        "defaultVideoMuted": {
+            "type": "boolean",
+            "description": "User's preference to start meetings with the camera off."
         }
       },
       "required": [
