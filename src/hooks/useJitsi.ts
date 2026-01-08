@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -10,8 +9,6 @@ interface UseJitsiProps {
   onMeetingEnd?: () => void;
   displayName?: string;
   avatarUrl?: string;
-  startWithAudioMuted?: boolean;
-  startWithVideoMuted?: boolean;
 }
 
 export function useJitsi({
@@ -21,8 +18,6 @@ export function useJitsi({
   onMeetingEnd,
   displayName,
   avatarUrl,
-  startWithAudioMuted = true,
-  startWithVideoMuted = true,
 }: UseJitsiProps) {
   const [isApiReady, setApiReady] = useState(false);
   const onMeetingEndRef = useRef(onMeetingEnd);
@@ -48,9 +43,7 @@ export function useJitsi({
       width: '100%',
       height: '100%',
       configOverwrite: {
-        prejoinPageEnabled: false,
-        startWithAudioMuted,
-        startWithVideoMuted,
+        prejoinPageEnabled: true, // Use Jitsi's pre-join screen
         disableDeepLinking: true,
         enableWelcomePage: false,
         transcribingEnabled: false,
@@ -81,16 +74,8 @@ export function useJitsi({
     };
 
     const jitsiApi = new window.JitsiMeetExternalAPI(domain, options);
-    
-    jitsiApi.on('videoConferenceJoined', () => {
-       if (displayName) {
-        jitsiApi.executeCommand('displayName', displayName);
-      }
-      if (avatarUrl) {
-        jitsiApi.executeCommand('avatarUrl', avatarUrl);
-      }
-    });
 
+    // This listener will fire when the user clicks to hang up.
     jitsiApi.on('readyToClose', () => {
       onMeetingEndRef.current?.();
     });
@@ -100,7 +85,8 @@ export function useJitsi({
         jitsiApi.dispose();
       }
     };
-  }, [roomName, domain, parentNode, startWithAudioMuted, startWithVideoMuted, displayName, avatarUrl]);
+  // We remove startWithAudio/VideoMuted as Jitsi's prejoin screen will handle this
+  }, [roomName, domain, parentNode, displayName, avatarUrl]);
   
 
   return { isApiReady };

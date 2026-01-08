@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useRef } from 'react';
@@ -10,16 +9,12 @@ interface MeetingRoomProps {
     roomName: string;
     displayName?: string;
     avatarUrl?: string;
-    startWithAudioMuted?: boolean;
-    startWithVideoMuted?: boolean;
 }
 
 export default function MeetingRoom({ 
     roomName,
     displayName,
     avatarUrl,
-    startWithAudioMuted,
-    startWithVideoMuted
 }: MeetingRoomProps) {
   const jitsiContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -34,8 +29,6 @@ export default function MeetingRoom({
     onMeetingEnd,
     displayName,
     avatarUrl,
-    startWithAudioMuted,
-    startWithVideoMuted
   });
 
   return (

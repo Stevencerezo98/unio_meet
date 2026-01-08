@@ -70,7 +70,7 @@ function RecentMeetings() {
   };
 
   const handleRejoin = (roomName: string) => {
-    router.push(`/lobby/${encodeURIComponent(roomName)}`);
+    router.push(`/meeting/${encodeURIComponent(roomName)}`);
   }
 
   // Don't render anything if the user isn't a registered user

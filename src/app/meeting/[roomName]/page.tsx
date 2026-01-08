@@ -1,49 +1,55 @@
-
 'use client';
 
-import MeetingRoom from '@/components/MeetingRoom';
-import { useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState, use } from 'react';
-import { useUser } from '@/firebase';
+import React, { use, useEffect, useState } from 'react';
+import { Suspense } from 'react';
 import { useRouter } from 'next/navigation';
-
-const AVATAR_SESSION_KEY = 'unio-avatar-url';
+import MeetingRoom from '@/components/MeetingRoom';
+import { useFirebase, useUser, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
 
 function MeetingPageContent({ roomName }: { roomName: string }) {
-  const searchParams = useSearchParams();
   const { user, isUserLoading } = useUser();
+  const { firestore } = useFirebase();
   const router = useRouter();
+
+  const userDocRef = useMemoFirebase(() => {
+    if (!firestore || !user || user.isAnonymous) return null;
+    return doc(firestore, 'users', user.uid);
+  }, [firestore, user]);
+
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc(userDocRef);
+
+  const [displayName, setDisplayName] = useState('Invitado');
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
 
-  // We need to read from sessionStorage in a useEffect to ensure it runs on the client.
   useEffect(() => {
-    try {
-      const storedAvatar = sessionStorage.getItem(AVATAR_SESSION_KEY);
-      if (storedAvatar) {
-        setAvatarUrl(storedAvatar);
-        // Clean up the session storage after reading
-        sessionStorage.removeItem(AVATAR_SESSION_KEY);
-      }
-    } catch (e) {
-      console.error("Could not read avatar from session storage", e);
-    }
-  }, []);
+    if (isUserLoading || isProfileLoading) return;
 
-  // Get other details from URL params as before.
-  const displayName = searchParams.get('displayName') || 'Invitado';
-  const audioMuted = searchParams.get('audioMuted') === 'true';
-  const videoMuted = searchParams.get('videoMuted') === 'true';
-  
+    if (user && !user.isAnonymous && userProfile) {
+      setDisplayName(userProfile.displayName || user.email || 'Usuario');
+      setAvatarUrl(userProfile.profilePictureUrl || undefined);
+    } else if (user?.isAnonymous) {
+      // Logic for anonymous users if you store their prefs somewhere like localStorage
+      const anonPrefs = localStorage.getItem('unio-anonymous-prefs');
+      if (anonPrefs) {
+        const { displayName: anonName, avatarUrl: anonAvatar } = JSON.parse(anonPrefs);
+        setDisplayName(anonName || 'Invitado');
+        setAvatarUrl(anonAvatar || undefined);
+      }
+    }
+  }, [user, isUserLoading, userProfile, isProfileLoading]);
+
+
   // We still want to make sure we have a user (even anonymous) before joining
   if (isUserLoading) {
-      return <div className="flex h-screen w-full items-center justify-center">Cargando reunión...</div>;
+    return <div className="flex h-screen w-full items-center justify-center">Cargando reunión...</div>;
   }
   
-  // Though the lobby should handle this, it's a good failsafe.
-  // In a real-world scenario, the lobby would have already created an anonymous session.
   if (!user) {
-      router.replace(`/lobby/${roomName}`);
-      return null;
+    // If no user at all, redirect to start to force a sign-in flow (even anonymous)
+    // This case might not be hit if your start page logic is robust
+    router.replace(`/start`);
+    return null;
   }
 
   return (
@@ -52,8 +58,6 @@ function MeetingPageContent({ roomName }: { roomName: string }) {
         roomName={roomName}
         displayName={displayName}
         avatarUrl={avatarUrl}
-        startWithAudioMuted={audioMuted}
-        startWithVideoMuted={videoMuted}
       />
     </main>
   );
