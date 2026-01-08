@@ -29,7 +29,7 @@ function SettingsHeader() {
   return (
     <header className="w-full max-w-4xl mb-8">
         <div className="flex justify-between items-center">
-            <Button variant="ghost" size="icon" onClick={() => router.back()}>
+            <Button variant="ghost" size="icon" onClick={() => router.push('/start')}>
                 <ArrowLeft className="h-6 w-6" />
                 <span className="sr-only">Volver</span>
             </Button>
@@ -49,6 +49,13 @@ export default function SettingsPage() {
   const { firestore, auth } = useFirebase();
   const { user, isUserLoading } = useUser();
 
+  // Route protection
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.replace('/login');
+    }
+  }, [user, isUserLoading, router]);
+  
   const userDocRef = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return doc(firestore, 'users', user.uid);
@@ -151,13 +158,8 @@ export default function SettingsPage() {
     }
   }
 
-  if (isUserLoading || isProfileLoading) {
-    return <div className="flex min-h-screen items-center justify-center">Cargando perfil...</div>;
-  }
-
-  if (!user) {
-      router.replace('/login');
-      return null;
+  if (isUserLoading || isProfileLoading || !user) {
+    return <div className="flex min-h-screen items-center justify-center">Cargando...</div>;
   }
 
   return (

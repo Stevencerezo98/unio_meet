@@ -1,83 +1,52 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getAuth } from 'firebase-admin/auth';
+import { getAuth, type DecodedIdToken } from 'firebase-admin/auth';
 import { initializeApp, getApps, getApp } from 'firebase-admin/app';
 
 export const runtime = 'nodejs';
 
 // Initialize Firebase Admin SDK if not already initialized
-// This pattern is safer for environments like Next.js middleware
 if (!getApps().length) {
   initializeApp();
 }
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const auth = getAuth(getApp());
   
-  // Get Auth instance safely by passing the initialized app
-  const auth = getAuth(getApps()[0]);
-  
-  const sessionCookieName = '__session';
+  // Use the standard cookie name for Firebase Auth session cookies
+  const sessionCookie = request.cookies.get('__session')?.value;
 
-  const unprotectedRoutes = [
-    '/',
-    '/login',
-    '/register',
-    '/thank-you'
-  ];
-  
-  // Allow access to lobby and meeting for both logged in and anonymous users.
-  if (unprotectedRoutes.includes(pathname) || pathname.startsWith('/lobby') || pathname.startsWith('/meeting') || pathname.startsWith('/start') || pathname.startsWith('/admin')) {
-    // Exception for authenticated users trying to access login/register
-     const sessionCookie = request.cookies.get(sessionCookieName)?.value;
-     if(sessionCookie && (pathname.startsWith('/login') || pathname.startsWith('/register'))) {
-        try {
-            await auth.verifySessionCookie(sessionCookie, true);
-            return NextResponse.redirect(new URL('/start', request.url));
-        } catch (error) {
-            // Invalid cookie, let it proceed to the login/register page.
-            const response = NextResponse.next();
-            response.cookies.delete(sessionCookieName);
-            return response;
-        }
-     }
-    return NextResponse.next();
+  // --- Logic for already logged-in users ---
+  if (sessionCookie) {
+    try {
+      // Verify the cookie is valid
+      await auth.verifySessionCookie(sessionCookie, true);
+      
+      // If user is logged in and tries to access login or register, redirect to start
+      if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
+        return NextResponse.redirect(new URL('/start', request.url));
+      }
+
+    } catch (error) {
+      // Invalid cookie. Clear it and proceed.
+      const response = NextResponse.next();
+      response.cookies.delete('__session');
+      return response;
+    }
   }
 
-  const sessionCookie = request.cookies.get(sessionCookieName)?.value;
-
+  // --- Logic for users who are NOT logged in ---
   if (!sessionCookie) {
-    // If no cookie, and it's a protected route (only /settings now), redirect to login.
-    if (pathname.startsWith('/settings')) {
-        return NextResponse.redirect(new URL('/login', request.url));
-    }
-    // For other cases that might slip through, allow them.
-    return NextResponse.next();
+      // If a non-logged-in user tries to access /settings, redirect them to login.
+      if (pathname.startsWith('/settings')) {
+          return NextResponse.redirect(new URL('/login', request.url));
+      }
   }
 
-  try {
-    // Verify the session cookie. This checks if the user is genuinely logged in.
-    await auth.verifySessionCookie(sessionCookie, true);
-    
-    // For any other route, let them proceed.
-    return NextResponse.next();
-  } catch (error) {
-    // Session cookie is invalid, expired, or something went wrong.
-    // We create a response to clear the invalid cookie.
-    const response = NextResponse.next();
-    response.cookies.delete(sessionCookieName);
-    
-    // If they were trying to access a protected route, redirect them to login.
-    if (pathname.startsWith('/settings')) {
-        const loginUrl = new URL('/login', request.url);
-        // We need to return a redirect response, not just the response with the deleted cookie.
-        return NextResponse.redirect(loginUrl);
-    }
-    
-    // If it was an unprotected page, just clear the cookie and let them continue.
-    return response;
-  }
+  // For all other cases, allow the request to proceed
+  return NextResponse.next();
 }
 
 export const config = {
