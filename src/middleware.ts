@@ -9,22 +9,26 @@ export const runtime = 'nodejs';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // A simple cookie check for client-side sessions.
-  // This cookie is a custom one we assume is set during login.
-  // In our app, it's called 'session'.
+  // This cookie is a custom one we set during admin login.
   const hasSession = request.cookies.has('session');
 
-  // --- Logic for already logged-in users ---
-  // If a user appears to have a session and tries to access login or register, 
-  // redirect them to the main start page.
-  if (hasSession) {
-    if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
-      return NextResponse.redirect(new URL('/start', request.url));
+  // --- Logic for admin routes ---
+  if (pathname.startsWith('/admin')) {
+    // If the user is trying to access /admin but has no session,
+    // redirect them to the login page.
+    if (!hasSession) {
+      return NextResponse.redirect(new URL('/login', request.url));
     }
   }
 
+  // --- Logic for login page ---
+  // If a user has a session and tries to access the login page,
+  // redirect them directly to the admin dashboard.
+  if (pathname.startsWith('/login') && hasSession) {
+      return NextResponse.redirect(new URL('/admin', request.url));
+  }
+
   // Allow all other requests to proceed.
-  // The protection for '/settings' is handled client-side in the component itself.
   return NextResponse.next();
 }
 

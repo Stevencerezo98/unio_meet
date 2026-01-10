@@ -44,9 +44,11 @@ export async function loadLandingContent(): Promise<LandingContent> {
     console.error('Error reading landing content:', error);
     // Return a default structure in case of error
     return {
-      hero: { title: '', subtitle: '', ctaPrimary: '', ctaSecondary: '', cardTitle: '', cardDescription: ''},
+      header: { logo: { type: 'text', value: 'Unio'}, navItems: [], ctaPrimary: {text: '', url: ''}, ctaSecondary: {text: '', url: ''}},
+      hero: { titlePart1: '', titlePart2: '', subtitle: '', ctaPrimary: '', ctaSecondary: '', cardTitle: '', cardDescription: ''},
       features: { title: '', subtitle: '', items: []},
-      footer: { brandName: '', brandDescription: '', socialLinks: [], linkColumns: [], legalLinks: [], copyright: ''}
+      footer: { brandName: '', brandDescription: '', socialLinks: [], linkColumns: [], legalLinks: [], copyright: ''},
+      thankYou: { title: '', description: '', buttonText: ''}
     };
   }
 }
