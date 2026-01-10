@@ -33,8 +33,8 @@ export default function AdminLoginPage() {
           title: '¡Has iniciado sesión!',
           description: 'Redirigiendo al dashboard...',
         });
-        router.push('/admin');
-        router.refresh(); // Force a refresh to ensure middleware cookie check
+        // router.push('/admin'); // This causes the issue
+        router.refresh(); // This forces a server-side data refresh, allowing middleware to re-evaluate with the new cookie.
       } else {
         toast({
           variant: 'destructive',
