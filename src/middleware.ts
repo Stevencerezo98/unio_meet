@@ -19,11 +19,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/admin/login', request.url));
   }
 
-  // --- Logic for admin login page ---
-  // If a user has a session and tries to access the admin login page,
-  // redirect them directly to the admin dashboard.
+  // If a user who is already logged in (has a session) tries to access the login page,
+  // redirect them to the main admin dashboard. This prevents them from seeing the login page again.
   if (pathname.startsWith('/admin/login') && hasSession) {
-      return NextResponse.redirect(new URL('/admin', request.url));
+    return NextResponse.redirect(new URL('/admin', request.url));
   }
 
   // Allow all other requests to proceed.

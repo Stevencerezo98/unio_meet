@@ -33,8 +33,10 @@ export default function AdminLoginPage() {
           title: '¡Has iniciado sesión!',
           description: 'Redirigiendo al dashboard...',
         });
-        // router.push('/admin'); // This causes the issue
-        router.refresh(); // This forces a server-side data refresh, allowing middleware to re-evaluate with the new cookie.
+        // Using push directly after the cookie is set.
+        // The middleware will catch subsequent navigation attempts to /admin if the cookie is gone.
+        router.push('/admin'); 
+        router.refresh(); // Also trigger a refresh to ensure server state is up-to-date.
       } else {
         toast({
           variant: 'destructive',
