@@ -1,5 +1,5 @@
 
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/ThemeProvider';
@@ -13,7 +13,6 @@ export const metadata: Metadata = {
   title: 'Unio Premium Video Platform',
   description: 'High-end video call platform built with Next.js and Jitsi',
   manifest: '/manifest.json',
-  themeColor: '#0a0a0a',
   icons: {
     icon: '/image/favicon.ico',
     apple: '/image/apple-touch-icon.png',
@@ -22,6 +21,14 @@ export const metadata: Metadata = {
     'apple-mobile-web-app-capable': 'yes',
     'apple-mobile-web-app-status-bar-style': 'black-translucent',
   }
+};
+
+export const viewport: Viewport = {
+  themeColor: '#0a0a0a',
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  userScalable: false,
 };
 
 export default function RootLayout({
@@ -33,7 +40,6 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <script src="https://iglesia.unio.my/external_api.js" async />
-        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover" />
       </head>
       <body className={`${inter.variable} font-body bg-background text-foreground antialiased`}>
         <FirebaseClientProvider>
