@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -10,7 +11,8 @@ import { Video, ShieldCheck, Zap, TvMinimal, Lock } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import type { LandingContent } from '@/lib/landing-content';
-import { loadLandingContent, generateRandomRoomName } from '@/app/actions';
+import { loadLandingContent } from '@/app/actions';
+import { generateRandomRoomName } from '@/lib/utils';
 import InstallPWAButton from '@/components/InstallPWAButton';
 import SplashScreen from '@/components/SplashScreen';
 

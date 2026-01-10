@@ -14,7 +14,7 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { login } from '@/actions';
+import { login } from '@/app/actions';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,6 +34,7 @@ export default function LoginPage() {
           description: 'Redirigiendo al dashboard...',
         });
         router.push('/admin');
+        router.refresh(); // Force a refresh to ensure middleware cookie check
       } else {
         toast({
           variant: 'destructive',

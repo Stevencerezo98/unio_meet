@@ -5,7 +5,8 @@ import fs from 'fs/promises';
 import path from 'path';
 import { cookies } from 'next/headers';
 import type { LandingContent } from '@/lib/landing-content';
-import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator';
+import { generateRandomRoomName } from '@/lib/utils';
+
 
 const contentFilePath = path.join(process.cwd(), 'src', 'lib', 'landing-content.json');
 
@@ -13,7 +14,7 @@ const contentFilePath = path.join(process.cwd(), 'src', 'lib', 'landing-content.
 
 export async function login(credentials: { username?: string; password?: string }) {
   // IMPORTANT: This is a basic, insecure check for demonstration purposes.
-  // Do not use this in a production environment.
+  // In a real application, use a robust authentication mechanism.
   if (
     credentials.username === 'Steven98' &&
     credentials.password === '06129812'
@@ -61,13 +62,7 @@ export async function saveLandingContent(
     await fs.writeFile(contentFilePath, JSON.stringify(newContent, null, 2), 'utf-8');
     return { success: true };
   } catch (error: any) {
-    console.error('Error saving landing content:', error);
+    console.error('Error saving content:', error);
     return { success: false, error: error.message || 'Failed to save content.' };
   }
-}
-
-
-// --- Room Name Generator ---
-export async function generateRandomRoomName(): Promise<string> {
-    return Math.floor(1000000000 + Math.random() * 9000000000).toString();
 }

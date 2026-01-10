@@ -1,5 +1,5 @@
 
-import { loadLandingContent } from '@/actions';
+import { loadLandingContent } from '@/app/actions';
 import { AdminTabs } from './_components/AdminTabs';
 import {
   Card,

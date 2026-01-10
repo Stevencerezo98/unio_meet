@@ -14,6 +14,7 @@ export function LogoutButton() {
     await logout();
     toast({ title: 'Logged out successfully.' });
     router.push('/login');
+    router.refresh();
   };
 
   return (

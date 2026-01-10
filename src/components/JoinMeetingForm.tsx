@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -7,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Video } from 'lucide-react';
-import { generateRandomRoomName } from '@/app/actions';
+import { generateRandomRoomName } from '@/lib/utils';
 
 
 export default function JoinMeetingForm() {
