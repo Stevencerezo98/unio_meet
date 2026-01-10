@@ -28,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script src="https://call.unio.my/external_api.js" async />
+        <script src="https://iglesia.unio.my/external_api.js" async />
         <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover" />
       </head>
       <body className={`${inter.variable} font-body bg-background text-foreground antialiased`}>
