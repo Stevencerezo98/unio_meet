@@ -13,18 +13,16 @@ export async function middleware(request: NextRequest) {
   const hasSession = request.cookies.has('session');
 
   // --- Logic for admin routes ---
-  if (pathname.startsWith('/admin')) {
-    // If the user is trying to access /admin but has no session,
-    // redirect them to the login page.
-    if (!hasSession) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
+  // If the user is trying to access any route under /admin/* (except the login page itself)
+  // and has no session, redirect them to the admin login page.
+  if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login') && !hasSession) {
+    return NextResponse.redirect(new URL('/admin/login', request.url));
   }
 
-  // --- Logic for login page ---
-  // If a user has a session and tries to access the login page,
+  // --- Logic for admin login page ---
+  // If a user has a session and tries to access the admin login page,
   // redirect them directly to the admin dashboard.
-  if (pathname.startsWith('/login') && hasSession) {
+  if (pathname.startsWith('/admin/login') && hasSession) {
       return NextResponse.redirect(new URL('/admin', request.url));
   }
 

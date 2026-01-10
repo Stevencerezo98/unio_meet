@@ -13,7 +13,7 @@ export function LogoutButton() {
   const handleLogout = async () => {
     await logout();
     toast({ title: 'Logged out successfully.' });
-    router.push('/login');
+    router.push('/admin/login');
     router.refresh();
   };
 

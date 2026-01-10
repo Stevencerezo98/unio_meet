@@ -16,7 +16,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { login } from '@/app/actions';
 
-export default function LoginPage() {
+export default function AdminLoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [username, setUsername] = useState('');
