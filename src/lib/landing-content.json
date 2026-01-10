@@ -1,8 +1,8 @@
 {
   "header": {
     "logo": {
-      "type": "text",
-      "value": "Unio"
+      "type": "image",
+      "value": "/image/logo.png"
     },
     "navItems": [
       {
@@ -177,6 +177,7 @@
           {
             "text": "Contactar a Ventas",
             "url": "#"
+
           },
           {
             "text": "Carreras",
