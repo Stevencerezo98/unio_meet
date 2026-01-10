@@ -14,6 +14,10 @@ export const metadata: Metadata = {
   description: 'High-end video call platform built with Next.js and Jitsi',
   manifest: '/manifest.json',
   themeColor: '#0a0a0a',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
   other: {
     'apple-mobile-web-app-capable': 'yes',
     'apple-mobile-web-app-status-bar-style': 'black-translucent',
