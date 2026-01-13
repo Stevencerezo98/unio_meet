@@ -2,7 +2,7 @@
 
 import React, { use, useEffect, useState } from 'react';
 import { Suspense } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import MeetingRoom from '@/components/MeetingRoom';
 import { useFirebase, useUser, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -11,6 +11,7 @@ function MeetingPageContent({ roomName }: { roomName: string }) {
   const { user, isUserLoading } = useUser();
   const { firestore } = useFirebase();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const userDocRef = useMemoFirebase(() => {
     if (!firestore || !user || user.isAnonymous) return null;
@@ -19,43 +20,51 @@ function MeetingPageContent({ roomName }: { roomName: string }) {
 
   const { data: userProfile, isLoading: isProfileLoading } = useDoc(userDocRef);
 
-  const [displayName, setDisplayName] = useState('Invitado');
+  const [displayName, setDisplayName] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    if (isUserLoading || isProfileLoading) return;
+    if (isUserLoading || (user && !user.isAnonymous && isProfileLoading)) {
+      return; // Wait until all user data is loaded
+    }
+
+    let finalDisplayName = 'Invitado';
+    let finalAvatarUrl: string | undefined = undefined;
 
     if (user && !user.isAnonymous && userProfile) {
-      setDisplayName(userProfile.displayName || user.email || 'Usuario');
-      setAvatarUrl(userProfile.profilePictureUrl || undefined);
+      // Registered user
+      finalDisplayName = userProfile.displayName || user.email || 'Usuario';
+      finalAvatarUrl = userProfile.profilePictureUrl || undefined;
     } else if (user?.isAnonymous) {
-      const anonPrefs = localStorage.getItem('unio-anonymous-prefs');
-      if (anonPrefs) {
-        const { displayName: anonName, avatarUrl: anonAvatar } = JSON.parse(anonPrefs);
-        setDisplayName(anonName || 'Invitado');
-        setAvatarUrl(anonAvatar || undefined);
+      // Anonymous user, get data from query params passed from lobby
+      finalDisplayName = searchParams.get('displayName') || 'Invitado';
+      const storedAvatar = sessionStorage.getItem('unio-avatar-url');
+       if(storedAvatar) {
+        finalAvatarUrl = storedAvatar;
       }
+    } else {
+      // No user, redirect to start
+      router.replace(`/lobby/${roomName}`);
+      return;
     }
-  }, [user, isUserLoading, userProfile, isProfileLoading]);
+    
+    setDisplayName(finalDisplayName);
+    setAvatarUrl(finalAvatarUrl);
+    setIsReady(true); // Mark as ready to render MeetingRoom
+    
+  }, [user, isUserLoading, userProfile, isProfileLoading, searchParams, router, roomName]);
 
 
-  // We still want to make sure we have a user (even anonymous) before joining
-  if (isUserLoading) {
+  if (!isReady) {
     return <div className="flex h-screen w-full items-center justify-center">Cargando reunión...</div>;
-  }
-  
-  if (!user) {
-    // If no user at all, redirect to start to force a sign-in flow (even anonymous)
-    // This case might not be hit if your start page logic is robust
-    router.replace(`/start`);
-    return null;
   }
 
   return (
     <main>
       <MeetingRoom
         roomName={roomName}
-        displayName={displayName}
+        displayName={displayName!}
         avatarUrl={avatarUrl}
       />
     </main>
@@ -71,7 +80,7 @@ export default function MeetingPage({
   const { roomName } = use(params);
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div className="flex h-screen w-full items-center justify-center">Cargando...</div>}>
       <MeetingPageContent roomName={roomName} />
     </Suspense>
   );
