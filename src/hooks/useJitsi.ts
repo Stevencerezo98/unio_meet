@@ -52,7 +52,6 @@ export function useJitsi({
       },
       configOverwrite: {
         prejoinPageEnabled: true,
-        disableDeepLinking: true,
       },
       interfaceConfigOverwrite: {
         SHOW_JITSI_WATERMARK: false,

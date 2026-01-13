@@ -1,29 +1,22 @@
 {
-  "name": "Unio Premium Video Platform",
+  "name": "Unio Meet",
   "short_name": "Unio",
-  "description": "High-end video call platform built with Next.js and Jitsi",
+  "description": "Unio Meet: Plataforma de videollamadas segura y privada. Conéctate con cualquier persona, en cualquier lugar y desde cualquier dispositivo.",
   "start_url": "/start",
-  "scope": "/",
   "display": "standalone",
   "background_color": "#0a0a0a",
   "theme_color": "#0a0a0a",
-  "capture_links": "existing_clients_navigate",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "/image/icon-192x192.png",
+      "src": "/image/android-chrome-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/image/icon-512x512.png",
+      "src": "/image/android-chrome-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
-    },
-    {
-      "src": "/image/apple-touch-icon.png",
-      "sizes": "180x180",
-      "type": "image/png",
-      "purpose": "any"
     }
   ]
 }
