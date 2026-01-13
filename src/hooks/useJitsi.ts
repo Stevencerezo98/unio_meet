@@ -44,8 +44,9 @@ export function useJitsi({
         avatar: avatarUrl
       },
       configOverwrite: {
+        // Correct way to set the share link domain
+        INVITE_DOMAIN: 'iglesia.unio.my',
         // Critical: Ensure invite links point to our app, not the Jitsi instance
-        customInviteDomain: 'iglesia.unio.my',
         disableDeepLinking: true,
         prejoinPageEnabled: true,
       },
@@ -53,6 +54,8 @@ export function useJitsi({
         SHOW_JITSI_WATERMARK: false,
         SHOW_WATERMARK_FOR_GUESTS: false,
         SHOW_BRAND_WATERMARK: false,
+        // Hide the Deep Linking section in settings to avoid user confusion
+        SETTINGS_SECTIONS: ['devices', 'language', 'moderator', 'profile', 'sounds'],
       }
     };
 
