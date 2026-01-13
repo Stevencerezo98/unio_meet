@@ -39,7 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script src="https://iglesia.unio.my/external_api.js" async />
+        <script src="https://call.unio.my/external_api.js" async />
       </head>
       <body className={`${inter.variable} font-body bg-background text-foreground antialiased`}>
         <FirebaseClientProvider>

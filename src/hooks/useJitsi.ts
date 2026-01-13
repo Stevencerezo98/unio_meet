@@ -14,7 +14,7 @@ interface UseJitsiProps {
 export function useJitsi({
   roomName,
   parentNode,
-  domain = 'iglesia.unio.my',
+  domain = 'call.unio.my', // Correct: Point to the Jitsi engine domain
   onMeetingEnd,
   displayName,
   avatarUrl,
@@ -44,8 +44,10 @@ export function useJitsi({
         avatar: avatarUrl
       },
       configOverwrite: {
+        // Critical: Ensure invite links point to our app, not the Jitsi instance
+        customInviteDomain: 'iglesia.unio.my',
         disableDeepLinking: true,
-        prejoinPageEnabled: true, // Enable Jitsi's prejoin page
+        prejoinPageEnabled: true,
       },
       interfaceConfigOverwrite: {
         SHOW_JITSI_WATERMARK: false,

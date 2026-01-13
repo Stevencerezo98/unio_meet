@@ -80,7 +80,7 @@ const systemDataFlow = ai.defineFlow(
     return {
       systemInfo: {
         videoEngine: 'jitsi',
-        videoDomain: 'iglesia.unio.my',
+        videoDomain: 'call.unio.my',
       },
       stats: {
         totalUsers: totalUsers,
