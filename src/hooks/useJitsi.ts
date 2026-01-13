@@ -51,28 +51,33 @@ export function useJitsi({
         displayName: displayName,
       },
       configOverwrite: {
-        prejoinPageEnabled: true,
+        // --- Solución para Móviles ---
+        // Evita que en móvil muestre la pantalla para descargar la app nativa.
+        disableDeepLinking: true,
+        // Desactiva la antesala que causa conflictos en algunas versiones con disableDeepLinking.
+        prejoinConfig: {
+          enabled: false
+        },
       },
       interfaceConfigOverwrite: {
         SHOW_JITSI_WATERMARK: false,
         SHOW_WATERMARK_FOR_GUESTS: false,
         SHOW_BRAND_WATERMARK: false,
-        APP_NAME: 'Unio',
-        NATIVE_APP_NAME: 'Unio',
-        SETTINGS_SECTIONS: ['devices', 'language', 'moderator', 'profile', 'sounds'],
+        APP_NAME: 'Unio Meet',
+        NATIVE_APP_NAME: 'Unio Meet',
+        // Oculta la promoción de la app en la interfaz.
         MOBILE_APP_PROMO: false,
+        SETTINGS_SECTIONS: ['devices', 'language', 'moderator', 'profile', 'sounds'],
       },
     };
 
     const jitsiApi = new window.JitsiMeetExternalAPI(domain, options);
     
-    // Set avatar once the participant joins
     jitsiApi.on('videoConferenceJoined', () => {
         if(avatarUrl) {
             jitsiApi.executeCommand('avatarUrl', avatarUrl);
         }
 
-        // Add to meeting history if it's a registered user
         if (isRegisteredUser && firestore && user) {
             const historyRef = collection(firestore, 'users', user.uid, 'meetingHistory');
             addDocumentNonBlocking(historyRef, {
