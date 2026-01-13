@@ -1,13 +1,14 @@
 'use client';
 
-import React, { use, useEffect, useState } from 'react';
+import React, { use, useEffect } from 'react';
 import { Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import MeetingRoom from '@/components/MeetingRoom';
 import { useFirebase, useUser, useDoc, useMemoFirebase, initiateAnonymousSignIn } from '@/firebase';
 import { doc } from 'firebase/firestore';
 
 function MeetingPageContent({ roomName }: { roomName: string }) {
+  const router = useRouter();
   const { user, isUserLoading } = useUser();
   const { firestore, auth } = useFirebase();
   
@@ -25,6 +26,10 @@ function MeetingPageContent({ roomName }: { roomName: string }) {
     }
   }, [auth, user, isUserLoading]);
 
+  // The callback function to execute when the meeting ends.
+  const handleMeetingEnd = () => {
+    router.push('/thank-you');
+  };
 
   if (isUserLoading || isProfileLoading || !user) {
     return <div className="flex h-screen w-full items-center justify-center">Cargando...</div>;
@@ -39,6 +44,7 @@ function MeetingPageContent({ roomName }: { roomName: string }) {
         roomName={roomName}
         displayName={displayName}
         avatarUrl={avatarUrl}
+        onMeetingEnd={handleMeetingEnd}
       />
     </main>
   );

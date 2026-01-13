@@ -2,27 +2,21 @@
 
 import React, { useRef } from 'react';
 import { useJitsi } from '@/hooks/useJitsi';
-import { useRouter } from 'next/navigation';
 
 interface MeetingRoomProps {
     roomName: string;
     displayName?: string;
     avatarUrl?: string;
+    onMeetingEnd?: () => void;
 }
 
 export default function MeetingRoom({ 
     roomName,
     displayName,
     avatarUrl,
+    onMeetingEnd,
 }: MeetingRoomProps) {
   const jitsiContainerRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
-
-  // Define the callback function that will be executed when the meeting ends.
-  const onMeetingEnd = () => {
-    // Redirect the user to the start page.
-    router.push('/start');
-  };
 
   // Initialize the Jitsi meeting using the custom hook.
   useJitsi({
