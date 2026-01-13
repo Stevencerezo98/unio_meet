@@ -1,27 +1,29 @@
 {
-    "name": "Unio Premium Video Platform",
-    "short_name": "Unio",
-    "description": "High-end video call platform built with Next.js and Jitsi",
-    "icons": [
-        {
-            "src": "/image/icon-192x192.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "/image/icon-512x512.png",
-            "sizes": "512x512",
-            "type": "image/png"
-        }
-    ],
-    "theme_color": "#0a0a0a",
-    "background_color": "#0a0a0a",
-    "start_url": "/start",
-    "display": "standalone",
-    "orientation": "portrait",
-    "url_handlers": [
-        {
-          "origin": "https://iglesia.unio.my"
-        }
-    ]
+  "name": "Unio Premium Video Platform",
+  "short_name": "Unio",
+  "description": "High-end video call platform built with Next.js and Jitsi",
+  "start_url": "/start",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "capture_links": "existing_clients_navigate",
+  "icons": [
+    {
+      "src": "/image/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/image/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/image/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
 }

@@ -28,7 +28,7 @@ function MeetingPageContent({ roomName }: { roomName: string }) {
 
   // The callback function to execute when the meeting ends.
   const handleMeetingEnd = () => {
-    router.push('/thank-you');
+    router.push('/start');
   };
 
   if (isUserLoading || isProfileLoading || !user) {
