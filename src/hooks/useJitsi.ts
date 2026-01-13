@@ -65,6 +65,15 @@ export function useJitsi({
         // Hide the Deep Linking section in settings to avoid user confusion
         SETTINGS_SECTIONS: ['devices', 'language', 'moderator', 'profile', 'sounds'],
         MOBILE_APP_PROMO: false, // Disables mobile app promotion
+        // Remove the invite button from the toolbar
+        TOOLBAR_BUTTONS: [
+            'microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
+            'fodeviceselection', 'hangup', 'profile', 'chat', 'recording',
+            'livestreaming', 'etherpad', 'sharedvideo', 'settings', 'raisehand',
+            'videoquality', 'filmstrip', 'feedback', 'stats', 'shortcuts',
+            'tileview', 'videobackgroundblur', 'download', 'help', 'mute-everyone',
+            'e2ee', 'security'
+        ],
       },
     };
 
