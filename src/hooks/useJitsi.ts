@@ -46,6 +46,7 @@ export function useJitsi({
       parentNode: parentNode.current,
       width: '100%',
       height: '100%',
+      lang: 'es', // <--- AQUÍ ESTÁ EL CAMBIO
       userInfo: {
         displayName: displayName,
       },
