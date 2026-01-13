@@ -41,11 +41,6 @@ export function useJitsi({
     
     const decodedRoomName = decodeURIComponent(roomName);
 
-    // This config ensures the invitation link points to your app's domain
-    const deploymentInfo = {
-        customDomain: 'iglesia.unio.my'
-    };
-
     const options = {
       roomName: decodedRoomName,
       parentNode: parentNode.current,
@@ -57,7 +52,6 @@ export function useJitsi({
       },
       configOverwrite: {
         prejoinPageEnabled: true,
-        deploymentInfo: deploymentInfo,
       },
       interfaceConfigOverwrite: {
         SHOW_JITSI_WATERMARK: false,
