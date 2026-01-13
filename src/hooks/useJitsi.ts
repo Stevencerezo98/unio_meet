@@ -45,7 +45,13 @@ export function useJitsi({
       },
       configOverwrite: {
         disableDeepLinking: true,
+        prejoinPageEnabled: true, // Enable Jitsi's prejoin page
       },
+      interfaceConfigOverwrite: {
+        SHOW_JITSI_WATERMARK: false,
+        SHOW_WATERMARK_FOR_GUESTS: false,
+        SHOW_BRAND_WATERMARK: false,
+      }
     };
 
     const jitsiApi = new window.JitsiMeetExternalAPI(domain, options);

@@ -20,8 +20,8 @@ export default function MeetingRoom({
 
   // Define the callback function that will be executed when the meeting ends.
   const onMeetingEnd = () => {
-    // Redirect the user to the thank-you page.
-    router.push('/thank-you');
+    // Redirect the user to the start page.
+    router.push('/start');
   };
 
   // Initialize the Jitsi meeting using the custom hook.
