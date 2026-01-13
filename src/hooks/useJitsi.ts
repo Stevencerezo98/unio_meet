@@ -41,6 +41,11 @@ export function useJitsi({
     
     const decodedRoomName = decodeURIComponent(roomName);
 
+    // This config ensures the invitation link points to your app's domain
+    const deploymentInfo = {
+        customDomain: 'iglesia.unio.my'
+    };
+
     const options = {
       roomName: decodedRoomName,
       parentNode: parentNode.current,
@@ -52,9 +57,7 @@ export function useJitsi({
       },
       configOverwrite: {
         prejoinPageEnabled: true,
-        // The following parameter will make Jitsi to use the invite link format
-        // of the main app domain instead of the Jitsi instance domain.
-        inviteAppName: 'Unio',
+        deploymentInfo: deploymentInfo,
       },
       interfaceConfigOverwrite: {
         SHOW_JITSI_WATERMARK: false,
@@ -62,18 +65,8 @@ export function useJitsi({
         SHOW_BRAND_WATERMARK: false,
         APP_NAME: 'Unio',
         NATIVE_APP_NAME: 'Unio',
-        // Hide the Deep Linking section in settings to avoid user confusion
         SETTINGS_SECTIONS: ['devices', 'language', 'moderator', 'profile', 'sounds'],
-        MOBILE_APP_PROMO: false, // Disables mobile app promotion
-        // Remove the invite button from the toolbar
-        TOOLBAR_BUTTONS: [
-            'microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
-            'fodeviceselection', 'hangup', 'profile', 'chat', 'recording',
-            'livestreaming', 'etherpad', 'sharedvideo', 'settings', 'raisehand',
-            'videoquality', 'filmstrip', 'feedback', 'stats', 'shortcuts',
-            'tileview', 'videobackgroundblur', 'download', 'help', 'mute-everyone',
-            'e2ee', 'security'
-        ],
+        MOBILE_APP_PROMO: false,
       },
     };
 
