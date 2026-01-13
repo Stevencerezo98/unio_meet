@@ -8,6 +8,7 @@ interface MeetingRoomProps {
     displayName?: string;
     avatarUrl?: string;
     onMeetingEnd?: () => void;
+    isRegisteredUser?: boolean;
 }
 
 export default function MeetingRoom({ 
@@ -15,21 +16,21 @@ export default function MeetingRoom({
     displayName,
     avatarUrl,
     onMeetingEnd,
+    isRegisteredUser,
 }: MeetingRoomProps) {
   const jitsiContainerRef = useRef<HTMLDivElement>(null);
 
-  // Initialize the Jitsi meeting using the custom hook.
   useJitsi({
     roomName: roomName,
     parentNode: jitsiContainerRef,
     onMeetingEnd,
     displayName,
     avatarUrl,
+    isRegisteredUser,
   });
 
   return (
     <div className="fixed inset-0 bg-background flex items-center justify-center">
-      {/* This div is the container where the Jitsi meeting iframe will be injected. */}
       <div ref={jitsiContainerRef} className="w-full h-full" />
     </div>
   );

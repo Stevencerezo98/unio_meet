@@ -20,23 +20,24 @@ function MeetingPageContent({ roomName }: { roomName: string }) {
   const { data: userProfile, isLoading: isProfileLoading } = useDoc(userDocRef);
 
   useEffect(() => {
-    // If auth is ready and there's no user, sign them in anonymously.
     if (auth && !isUserLoading && !user) {
       initiateAnonymousSignIn(auth);
     }
   }, [auth, user, isUserLoading]);
 
-  // The callback function to execute when the meeting ends.
   const handleMeetingEnd = () => {
     router.push('/start');
   };
 
-  if (isUserLoading || isProfileLoading || !user) {
-    return <div className="flex h-screen w-full items-center justify-center">Cargando...</div>;
+  const isLoading = isUserLoading || (user && !user.isAnonymous && isProfileLoading);
+  
+  if (isLoading || !user) {
+    return <div className="flex h-screen w-full items-center justify-center">Cargando reunión...</div>;
   }
 
-  const displayName = (user && !user.isAnonymous && userProfile?.displayName) ? userProfile.displayName : 'Invitado';
-  const avatarUrl = (user && !user.isAnonymous && userProfile?.profilePictureUrl) ? userProfile.profilePictureUrl : undefined;
+  const isRegisteredUser = !user.isAnonymous;
+  const displayName = isRegisteredUser ? (userProfile?.displayName || 'Usuario Registrado') : 'Invitado';
+  const avatarUrl = isRegisteredUser ? userProfile?.profilePictureUrl : undefined;
 
   return (
     <main>
@@ -45,6 +46,7 @@ function MeetingPageContent({ roomName }: { roomName: string }) {
         displayName={displayName}
         avatarUrl={avatarUrl}
         onMeetingEnd={handleMeetingEnd}
+        isRegisteredUser={isRegisteredUser}
       />
     </main>
   );
@@ -55,7 +57,6 @@ export default function MeetingPage({
 }: {
   params: Promise<{ roomName: string }>;
 }) {
-  // React.use() unwraps the promise returned by Next.js 15 for params
   const { roomName } = use(params);
 
   return (
